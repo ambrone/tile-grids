@@ -12,7 +12,6 @@ $(document).ready(function(){
 	}
 	
 	this.side = s;
-
 	this.squares = [];
 	this.build = function(squares){
 	    var $box = $('<div id='+id+' style="width:'+this.side+'px; height:'+this.side+'px"></div>');
@@ -86,20 +85,49 @@ $(document).ready(function(){
 		var ctx = canvas.getContext('2d');
 		
 		var squaresPerSide = this.side / 12;
-		console.log('squaresPerSide: '+squaresPerSide);
+//		console.log('squaresPerSide: '+squaresPerSide);
+//		console.log('squared: '+Math.pow(squaresPerSide,2));
+//		console.log(this.squares.length);
 		var colorCount = 0
-		for(i=0;i<=squaresPerSide*11;i+=11){
+		var now = Date.now();
+		for(i=0;i<=squaresPerSide*12;i+=12){
 		    for(j=0;j<squaresPerSide*12;j+=12){
+
 			ctx.fillStyle = this.squares[colorCount].color;
 			ctx.fillRect(j,i,10,10);
+			
 			colorCount +=1;
+			if(colorCount == this.squares.length){
+			    console.log(Date.now()-now);
+			    return;
+			}
 		    }
+		    
 		}
-		console.log('colorCount: ' + colorCount);
-		console.log('simpleArray.squares.length: '+simpleArray.squares.length);
-		
-	    }
+		console.log('ha');
+
+
+/* this works fine and it only a tad slower
+		var now = Date.now();
+		var x = 0;
+		var y = 0;
+		while(colorCount < this.squares.length){
+		    ctx.fillStyle = this.squares[colorCount].color;
+		    ctx.fillRect(x,y,10,10);
+		    
+		    x += 12;
+		    if((colorCount+1)%squaresPerSide == 0){
+			y += 12;
+			x -= this.side;
+		    }
+		    colorCount += 1;
+		}
+//		console.log('simpleArray.squares.length: '+simpleArray.squares.length);
+		console.log(Date.now()-now);
+*/	    }
+
 	}
+
 
 	this.clear = function(){
 	    console.log('clear');
@@ -307,11 +335,32 @@ $(document).ready(function(){
 	var timeoutID =  window.setTimeout(function(){ $element.css('background-color','white');} , 500 );
     }
     
-    
-    $('#fill').on('click', function (){	
+    function buildEditableFromFields(){
+	var values = grabFieldValues();
+	g = new Grid(values.size, 'tester', values.colorBorder, values.colorBack);
+	g.build();
 	fill(g,grabFieldValues());
-    });
+	$('#test').html('editable');
+    }
 
+    function buildCanvasFromFields(){
+	$('#boxwrapper').empty();
+	var values = grabFieldValues();
+	var cg = new canvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
+	cg.build();
+	fill(cg, values);
+	cg.draw($('#cantester')[0]);
+	$('#test').html('canvas');
+    }
+
+    $('#fill').on('click', function (){
+	buildEditableFromFields();
+    });
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    $('#fillCan').on('click',function(){
+	buildCanvasFromFields();
+    });
 
     fill = function (grid,values){
 	grid.clear();
@@ -460,6 +509,7 @@ $(document).ready(function(){
 
 	
 
+	
 ///////////////////////////////////////////////////////////////////////////////////////
 
     makeSimpleArray = function(nameOfDesign, grid){
@@ -510,7 +560,6 @@ $(document).ready(function(){
     }
     
     createCanvasFromArray = function(simpleArray, canvas){
-
 	canvas.height = simpleArray.side+12;
 	canvas.width = simpleArray.side+12;
 	if (canvas.getContext) {
@@ -532,8 +581,6 @@ $(document).ready(function(){
 	
 	}
     }
-
-//    createCanvasFromArray(makeSimpleArray('g',g),2);
 
     function applyFieldsToPage(simpleArray, grid){
 	//puts grid data from saved grid into inputs on page
