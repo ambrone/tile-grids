@@ -1,0 +1,81 @@
+
+#test{
+//  width:468px;
+//  height:468px;
+ aborder:solid 1px black;
+}
+
+.square{
+    float:left;
+    width:10px;
+    height:10px;
+    border:solid 1px black;
+}
+
+#probBox, #colorBox{
+    aborder:solid 1px black;
+}
+
+
+ul{margin:0}
+
+input {
+border: solid 1px gray;
+}
+
+#probBox ul li, #colorBox ul li, #miscBox ul li, #sizeSave ul li, #leastBox ul li{
+    list-style:none;
+    display:inline;
+
+}
+
+input{
+    padding:4px;
+    border-radius:4px;
+}
+
+
+#leastBox{position:relative; left:200px}
+
+#gridName{float:left;margin:0 5px;}
+
+#boxwrapper{float:left}
+
+#savedlist{
+    list-style:none;
+    width:300px;
+    float:right;
+}
+
+
+#savedlist li{clear:both; }
+
+.thumbnail,#savedlist p{
+float:left;
+margin:5px
+}
+
+#savedlist p{
+    padding:14px
+}
+
+.delete{
+float:right;
+margin:17px;
+}
+
+
+#savedlist img{width:50px;}
+
+
+#test{clear:both}
+
+
+
+.square{webkit-box-sizing: content-box; box-sizing:content-box}
+
+.clearfix{clear:both}
+
+
+
+/*#canvas{width:600px; height:600px;*/
