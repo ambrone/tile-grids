@@ -346,20 +346,38 @@ $(document).ready(function(){
     function buildCanvasFromFields(){
 	$('#boxwrapper').empty();
 	var values = grabFieldValues();
-	var cg = new canvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
+	cg = new canvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
 	cg.build();
 	fill(cg, values);
 	cg.draw($('#cantester')[0]);
 	$('#test').html('canvas');
     }
 
+    function swap(){
+	if ($('#boxwrapper').children('canvas').length >= 1){
+	    var array = makeSimpleArray('swap', cg);
+	    g = createGridFromArray(array, g);
+	    $('#test').html('editable');
+	}else{
+	    console.log('editable');
+	    $('#boxwrapper').empty().append($('<canvas id="canvas" />'));
+	    var array = makeSimpleArray('swap', g);
+	    cg = createCanvasFromArray(array, $('canvas')[0]);
+	    $('#test').html('canvas');
+	}
+    }
+    
+
     $('#fill').on('click', function (){
 	buildEditableFromFields();
     });
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     $('#fillCan').on('click',function(){
 	buildCanvasFromFields();
+    });
+
+    $('#swap').on('click',function(){
+	swap();
     });
 
     fill = function (grid,values){
@@ -535,7 +553,6 @@ $(document).ready(function(){
 	//builds grid on page from database saved grid
 	console.log("simpleArray.side == grid.side: ");
 	console.log(simpleArray.side == grid.side);
-	var grid = grid;
 	if (simpleArray.side != grid.side){
 	    $('#tester').detach();
 	    grid = new Grid(simpleArray.side, 'tester', simpleArray.border, simpleArray.background);
@@ -823,7 +840,7 @@ $(document).ready(function(){
 
 
 var g;
-var c;
+var cg;
 var nabes;
 var partialFill;
 var initialFill;
