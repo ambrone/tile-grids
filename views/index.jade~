@@ -1,0 +1,83 @@
+doctype html
+html(lang="en")
+	head
+		script(type='text/javascript' src='http://code.jquery.com/jquery-1.10.2.min.js')
+		script(type='text/javascript' src='underscore.js')
+		script(type='text/javascript' src='html2canvas.js')
+		script(type='text/javascript' src='grid.js')
+
+		link(rel='stylesheet' href='ootstrap.min.css')
+		link(rel='stylesheet' href='grid.css')
+	body
+		div#buttons
+			div
+				button#clear clear
+				button#fill fill
+				div#test test
+		div#probBox
+			ul
+				li.label(style='margin-right:15px') first
+				li
+					input#initial(type='text' value='.1')
+				li.label second
+				li
+					input#second(type='text' value='.1')
+				li.label(style='margin-right:8px') third
+				li
+					input#third(type='text' value='.1')
+		
+		div#colorBox(style="clear:both")
+			ul
+				li.label color1
+				li
+					input#color1.colorBox(type='text' value='blue')
+				li.label color2
+				li
+					input#color2.colorBox(type='text' value='red')
+				li.label color3
+				li
+					input#color3.colorBox(type='text' value='orange')
+		div.clearfix
+		div#leastBox
+			ul
+				li.label at Least:
+				li
+					input#least2(type='text' value='0')
+				li.label at Least:
+				li
+					input#least3(type='text' value='0')
+		div#miscBox
+			ul
+				li.label background:
+				li
+					input#colorBack(type='text' value='white')
+				li.label border:
+				li
+					input#colorBorder(type='text' value='white')
+		div.clearfix
+		div#sizeSave
+			ul
+				li.label size:
+				li
+					input#size(type='text')
+				li
+					button#rebuild rebuild
+				li.label save as:
+				li
+					input#savename(type='text')
+				li
+					button#save save
+		div.clearfix
+		h2#gridName
+		button#update update
+		div.clearfix
+		div#boxwrapper
+		ul#savedlist
+			each save, i in saves
+				li.recall(name=save.name)
+					img.thumbnail(src= save.img)
+					p= save.name 
+					button.delete delete
+		div.clearfix
+		button#can save thumb
+		div#thumb

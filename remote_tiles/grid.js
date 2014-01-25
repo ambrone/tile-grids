@@ -6,17 +6,18 @@ $(document).ready(function(){
     
     Grid = function(side,id,border,background){
 	var s = parseInt(side);
-
 	while(s%12 !=0){
 	    s+=1;
 	}
-	
 	this.side = s;
 	this.squares = [];
+	this.probs = [];
+	this.colors = []
+	this.border = border;
+	this.background = background;
 	this.build = function(squares){
 	    var $box = $('<div id='+id+' style="width:'+this.side+'px; height:'+this.side+'px"></div>');
 	    $('#boxwrapper').empty().append($box);
-	    
 	    var sqPerSide = this.side / 12;
 	    console.log('sqperSide' + sqPerSide);
 	    if (arguments.length == 0){
@@ -28,10 +29,7 @@ $(document).ready(function(){
 		    sqIndex += 1;
 		}
 	    }
-//	    else{
-//		this.squares.forEach(function(square){
 	}
-	
 	this.clear = function(){
 	    this.squares.forEach(function(square){
 		square.change('white');
@@ -40,9 +38,6 @@ $(document).ready(function(){
 	    });
 	    this.changeBorder('black');
 	}
- 
-	this.border = border;
-	this.background = background;
 	
 	this.changeBorder = function(newColor){
 	    $('.square').css('border' , '1px solid '+newColor);
@@ -50,98 +45,65 @@ $(document).ready(function(){
 	}
 
 	this.changeBackground = function(newColor){
-	    var background = this.background;
 	    this.squares.forEach(function(square){
-
 		if(square.isBackground  == true){
 		    square.change(newColor);
-		    square.isBackground = true;
 		}
 	    });
 	    this.background = newColor;
 	}
-
-	this.probs = [];
-	this.colors = []
-
     }
   
-    canvasGrid = function(side,id,border,background){
-	
+    CanvasGrid = function(side,id,border,background){
 	Grid.call(this,side,id,border,background);
+
 	this.build = function(){
-	    var canvas = $('<canvas id="'+id+'"></canvas>');	    
-	    $('#boxwrapper').empty().append(canvas);
+	    
 	    var sqPerSide = this.side / 12;
 	    for(var i=0;i<Math.pow(sqPerSide,2);i++){
-		var square = new canvasSquare(this,'white',10,i);
+		var square = new CanvasSquare(this,'white',10,i);
 		this.squares.push(square);
 	    }
 	}
 	this.draw =function(canvas){
-	    canvas.height = this.side+12;
-	    canvas.width = this.side+12;
+	    var $canvas = $('<canvas id="cantester"></canvas>');	    
+	    $('#boxwrapper').empty().append($canvas);
+	    var canvas = $canvas[0];
+	    canvas.height = this.side;
+	    canvas.width = this.side;
+	    console.log('drawing...');
 	    if (canvas.getContext) {
 		var ctx = canvas.getContext('2d');
-		
+		ctx.fillStyle = this.border;
+		ctx.fillRect(0,0,this.side,this.side);
 		var squaresPerSide = this.side / 12;
-//		console.log('squaresPerSide: '+squaresPerSide);
-//		console.log('squared: '+Math.pow(squaresPerSide,2));
-//		console.log(this.squares.length);
 		var colorCount = 0
 		var now = Date.now();
-		for(i=0;i<=squaresPerSide*12;i+=12){
-		    for(j=0;j<squaresPerSide*12;j+=12){
-
+		for(i=1;i<=squaresPerSide*12;i+=12){
+		    for(j=1;j<squaresPerSide*12;j+=12){
 			ctx.fillStyle = this.squares[colorCount].color;
 			ctx.fillRect(j,i,10,10);
-			
+			this.squares[colorCount].pos.x=j;
+			this.squares[colorCount].pos.y=i;
 			colorCount +=1;
 			if(colorCount == this.squares.length){
+			    console.log('build time: ');
 			    console.log(Date.now()-now);
 			    return;
 			}
 		    }
-		    
 		}
-		console.log('ha');
+	    }
+	}
 
-
-/* this works fine and it only a tad slower
-		var now = Date.now();
-		var x = 0;
-		var y = 0;
-		while(colorCount < this.squares.length){
-		    ctx.fillStyle = this.squares[colorCount].color;
-		    ctx.fillRect(x,y,10,10);
-		    
-		    x += 12;
-		    if((colorCount+1)%squaresPerSide == 0){
-			y += 12;
-			x -= this.side;
-		    }
-		    colorCount += 1;
-		}
-//		console.log('simpleArray.squares.length: '+simpleArray.squares.length);
-		console.log(Date.now()-now);
-*/	    }
-
+	this.changeBorder = function(newColor){
+	    this.border = newColor;
 	}
 
 
-	this.clear = function(){
-	    console.log('clear');
-	}
-	this.changeBorder = function(){
-	    console.log('changeBorder');
-	}
-	
-	this.changeBackGround = function(){
-	    console.log('changeBackgournd');
-	}
 	
     };
-    canvasGrid.prototype = Object.create(Grid.prototype);
+    CanvasGrid.prototype = Object.create(Grid.prototype);
 
     function Square(grid,color, width, index){
 	this.color = color;
@@ -225,15 +187,17 @@ $(document).ready(function(){
 	this.nabes = [this.above, this.right, this.left, this.below, this.ul, this.ur, this.bl, this.br ]
     }
     
-    canvasSquare = function(grid,color,width,index){
+    CanvasSquare = function(grid,color,width,index){
 	Square.call(this,grid,color,width,index);
 	this.change = function(color){
 	    this.color = color;
 	    this.isBackground = false;
 	}
+	this.make = false;
+	this.pos = {x:0,y:0};
     }
 
-    canvasSquare.prototype = Object.create(Square.prototype);
+    CanvasSquare.prototype = Object.create(Square.prototype);
     
      nabes = function(square){
 	var nabes = [];
@@ -344,9 +308,9 @@ $(document).ready(function(){
     }
 
     function buildCanvasFromFields(){
-	$('#boxwrapper').empty();
+	//$('#boxwrapper').empty();
 	var values = grabFieldValues();
-	cg = new canvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
+	cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
 	cg.build();
 	fill(cg, values);
 	cg.draw($('#cantester')[0]);
@@ -354,15 +318,15 @@ $(document).ready(function(){
     }
 
     function swap(){
-	if ($('#boxwrapper').children('canvas').length >= 1){
+	if ($('#boxwrapper').children('canvas').length >= 1 || $('#boxwrapper').children('img').length>=1){
+	    console.log('swap1');
 	    var array = makeSimpleArray('swap', cg);
-	    g = createGridFromArray(array, g);
+	    createGridFromArray(array, g);
 	    $('#test').html('editable');
 	}else{
-	    console.log('editable');
-	    $('#boxwrapper').empty().append($('<canvas id="canvas" />'));
-	    var array = makeSimpleArray('swap', g);
-	    cg = createCanvasFromArray(array, $('canvas')[0]);
+	    console.log('swap2');
+	    buildcg(makeSimpleArray('swap',g));
+	    cg.draw($('canvas')[0]);
 	    $('#test').html('canvas');
 	}
     }
@@ -381,7 +345,7 @@ $(document).ready(function(){
     });
 
     fill = function (grid,values){
-	grid.clear();
+//	grid.clear();
 
 	grid.colors = [values.color1,values.color2,values.color3]
 	grid.probs = [values.initial, values.second, values.third]
@@ -396,7 +360,7 @@ $(document).ready(function(){
 	    }
 	}else{
 	   // $('.square').css('border', 'solid 1px '+colorBorder);
-	    console.log(values.colorBorder);
+//	    console.log(values.colorBorder);
 	    grid.changeBorder(values.colorBorder);
 	}
 	
@@ -537,8 +501,7 @@ $(document).ready(function(){
 		      'colors':grid.colors,
 		      'probs':grid.probs,
 		      'side':grid.side, 
-		      'squares':[],
-		      'img':img
+		      'squares':[]
 		     };
 	grid.squares.forEach(function(square,index){
 	    //	    simpleArray['squares'].push(square.color);
@@ -549,31 +512,28 @@ $(document).ready(function(){
 	return simple;
     }
     
-    createGridFromArray = function(simpleArray, grid){
+    createGridFromArray = function(simpleArray){
 	//builds grid on page from database saved grid
-	console.log("simpleArray.side == grid.side: ");
-	console.log(simpleArray.side == grid.side);
-	if (simpleArray.side != grid.side){
-	    $('#tester').detach();
-	    grid = new Grid(simpleArray.side, 'tester', simpleArray.border, simpleArray.background);
-	    grid.build();
-	}
-
-	var len = grid.squares.length-1;
+	$('#drawing').removeClass('hidden');
+	var s = simpleArray;
+	console.log('s: '+s);
+	g = new Grid(s.side , 'tester' , s.border , s.background);
+	g.build();
+	var len = g.squares.length-1;
 	console.log(simpleArray);
 	for(var i=0;i<=len;i++){
-	    grid.squares[i].change(simpleArray.squares[i][0]);
-	    grid.squares[i].iteration = simpleArray['squares'][i][1];
-	    grid.squares[i].isBackground = simpleArray['squares'][i][2];
+	    g.squares[i].change(simpleArray.squares[i][0]);
+	    g.squares[i].iteration = simpleArray['squares'][i][1];
+	    g.squares[i].isBackground = simpleArray['squares'][i][2];
 	}
 				
 
-	grid.changeBackground(simpleArray['background'])
-	grid.changeBorder(simpleArray['border']);
-	grid.colors = simpleArray['colors'];
-	grid.probs = simpleArray['probs'];
+	g.changeBackground(simpleArray['background'])
+	g.changeBorder(simpleArray['border']);
+	g.colors = simpleArray['colors'];
+	g.probs = simpleArray['probs'];
 	
-	return grid;
+	$('#drawing').addClass('hidden');
     }
     
     createCanvasFromArray = function(simpleArray, canvas){
@@ -597,7 +557,29 @@ $(document).ready(function(){
 //	    console.log('simpleArray.squares.length: '+simpleArray.squares.length);
 	
 	}
+	
     }
+
+    function buildcg(simpleArray){
+	var s = simpleArray;
+	cg = new CanvasGrid(s.side, 'cantester', s.border, s.background);
+	cg.build();
+	cg.name = s.name;
+	cg.colors = s.colors;
+	cg.probs = s.probs;
+	console.log(simpleArray);
+//	cg.squares = s.squares.slice(0);
+	//fill(cg, grabFieldValues());	
+	var len = cg.squares.length-1;
+	console.log(simpleArray);
+	for(var i=0;i<=len;i++){
+	    cg.squares[i].change(s.squares[i][0]);
+	    cg.squares[i].iteration = s.squares[i][1];
+	    cg.squares[i].isBackground = s.squares[i][2];
+	}
+
+    }
+
 
     function applyFieldsToPage(simpleArray, grid){
 	//puts grid data from saved grid into inputs on page
@@ -612,8 +594,8 @@ $(document).ready(function(){
 	$('#gridName').html(simpleArray.name);
     }
     
-    function buildListItem(img, name){
-	return $('<li class="recall" name="'+name+'"><img src="'+img+'"class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button></li>');
+    function buildListItem(name){
+	return $('<li class="recall" name="'+name+'"><img src="images/'+name+'.png" class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button></li>');
     }
 
 ////////////////////////////////////////////////////////////////CANVAS
@@ -636,6 +618,7 @@ $(document).ready(function(){
     
     uploadThumb = function(img, name){
 	var dat = {'name':name, 'img':img};
+	console.log(dat);
 	$.ajax({
 	    type:'post',
 	    data:JSON.stringify(dat),
@@ -651,47 +634,52 @@ $(document).ready(function(){
 //A!!!!!!!!!!!J!!!!!!!!!!!!A!!!!!!!!!!!!!!!!!!X!!!!!!!!!!!!!!!!!!!AJAX
     
     $('#save').click(function(e){
-	makeCanvas();
+	var imageSRC = saveCanvasAsImage($('canvas')[0]);
 	var nameOfDesign = $('#savename').val();
-	var savedNames = []
+
 	$('.recall').each(function(){
 	    if(nameOfDesign == $(this).attr('name')){
 		nameOfDesign += '1';
 	    }
 	});
-	console.log(savedNames);
+
 	if (nameOfDesign == ''){
 	    alert('name your work then press save');
 	    return
 	}
+	if ($('canvas').length >=1){
+	    var grid = cg;
+	}else{
+	    var grid = g;
+	    makeCanvas();
+	}
+      	testArray = makeSimpleArray(nameOfDesign, grid);
 
-      	testArray = makeSimpleArray(nameOfDesign, g);
  	$.ajax({
 	    type: 'POST',
 	    data: JSON.stringify(testArray),
 	    contentType: 'application/json',
             url: '/save',
             success: function(data) {
-                console.log('success');
-                console.log(data);
 
 		$('#savename').val('');
 		$('#gridName').html(nameOfDesign);
-		var imageSRC = saveCanvasAsImage($('canvas')[0]);
-		var listItem = buildListItem(imageSRC,nameOfDesign);
-		$('#savedlist').append(listItem);
-
+		
+		var listItem = buildListItem(nameOfDesign);
 		uploadThumb(imageSRC,nameOfDesign);
-
+		$('#savedlist').append(listItem);
+		$('#savedlist').children('li').last().children('img').attr('src' , imageSRC);
+		
             }
         });
     });
 
-    $(document).on('click', '.recall, .thumbnail', function(){
+    $(document).on('click', '.thumbnail', function(){
 	var entryName = $(this).parents('.recall').attr('name');
-	
+	var now;
 	var dat = {};
 	dat.name = entryName;
+	var $this = $(this).clone().removeClass('thumbnail').addClass('tempImage');
 	$.ajax({
 	    type:'post',
 	    data:JSON.stringify(dat),
@@ -699,13 +687,20 @@ $(document).ready(function(){
 	    url:'/saves',
 	    beforeSend:function(data){
 		//console.log(data);
+		now = Date.now();
+		//$('#boxwrapper').empty().append($('<div id="loading">loading...</div>'));
+		$('#boxwrapper').empty().append($this);
 	    },
 	    success:function(data){
-                console.log('successful recall of '+entryName);
-//                console.log(data);
-		var squares  = data[0];
-		createGridFromArray(squares , g);
-		applyFieldsToPage(squares, g.squares);
+		console.log(data[0]);
+		var canvas = $('<canvas id="canvas" ></canvas>');
+	//	$('#boxwrapper').empty().append(canvas);
+		buildcg(data[0]);
+	//	cg.draw($('canvas')[0]);
+		applyFieldsToPage(data[0]);
+		console.log('load time: ');
+		console.log(Date.now() - now);
+		//canvas.append($this);
 	    }
 	});
     });
@@ -799,7 +794,7 @@ $(document).ready(function(){
     
     	    
 //on initial page load, gets last grid posted to database and prints to screen, if none exists, draws one from default values
-    $.ajax({
+/*    $.ajax({
 	type:'post',
 	data:JSON.stringify({'name':$('.recall').last().attr('name')}),
 	contentType:'application/json',
@@ -826,7 +821,7 @@ $(document).ready(function(){
 		applyFieldsToPage(squares, g.squares);
 
 	    }else{
-*/
+
 		var values = grabFieldValues();
 		g = new Grid(200,'tester',values.colorBorder,values.colorBack);
 		g.build();
@@ -834,8 +829,100 @@ $(document).ready(function(){
 //	    }	    
 	}
     });
+*/
+    $('.colorBox, #colorBack, #colorBorder').on('keyup , blur, change' , function(){
+	var $this = $(this);
+	var color = $this.val();
+	$this.css('background' , color);
+	if(color == 'black'){
+	    $this.css('color' , 'white');
+	}
+	else{
+	    $this.css('color' , 'black');
+	}
+	if(color.length == 6 && color.toLowerCase() != color){
+	    color = '#' + color;
+	    $(this).val(color);
+	}
+    });
 
+    $(document).on('click', 'canvas', function(e){
+	var xy = getMousePos($(this)[0],e);
+
+	while(xy.x%12 !=0 ){
+	    xy.x -= 1;
+	}
+	while(xy.y%12 !=0 ){
+	    xy.y -= 1;
+	}
+	xy.x +=1;
+	xy.y +=1;
+	var clickedSquare = returnClickedSquare(xy.x,xy.y);
+	console.log(clickedSquare);
+
+	
+	var canvas = $(this)[0].getContext('2d');
+
+	console.log(nabes(clickedSquare));
+//	nabes(clickedSquare).forEach(function(square){
+//	    changeSquare(square, 'red' , 2 , canvas);
+//	});
+
+	var values = grabFieldValues();
+	changeSquare(clickedSquare , values.color1 , 1 , canvas);
+	
+	var randArray = testRandom(values.second,values.least2);
+	console.log('1st Array: '+randArray);
+	var changedNeighbors =[];
+	nabes(clickedSquare).forEach(function(neighbor,index){
+		if(randArray[index] == 1){
+		    if(neighbor.isBackground == true){
+			changeSquare(neighbor, values.color2, 2, canvas);
+			changedNeighbors.push(neighbor);
+		    }
+		}
+	});
+
+	var changedNeighbors2 = []
+	randArray = testRandom(values.third, values.least3);
+	console.log('2nd array '+randArray);
+	changedNeighbors.forEach(function(neighbor,index){
+	    nabes(neighbor).forEach(function(nabe, index){
+		if(randArray[index] == 1){
+		    if(nabe.isBackground == true){
+			changeSquare(nabe, values.color3 , 3 , canvas);
+			changedNeighbors2.push(nabe);
+		    }
+		}
+	    });
+	});
+
+    });
+    
+    function changeSquare(square , newColor, iteration, canvas){
+	square.change(newColor);
+	square.iteration = iteration;
+	canvas.fillStyle = newColor;
+	canvas.fillRect(square.pos.x,square.pos.y, 10 , 10);
+    }
+
+    function returnClickedSquare(x,y){
+	for(var i=0;i<=cg.squares.length;i++){
+	    if( cg.squares[i].pos.x == x && cg.squares[i].pos.y == y){
+		return cg.squares[i];
+	    }
+	}
+    }
+
+    function getMousePos(canvas, evt) {
+	var rect = canvas.getBoundingClientRect();
+	return {
+	    x: evt.clientX - rect.left,
+	    y: evt.clientY - rect.top
+	};
+    }
 });
+
 
 
 
@@ -857,6 +944,6 @@ var uploadThumb;
 var saveCanvasAsImage;
 var fill;
 var createCanvasFromArray;
-var canvasGrid;
-var canvasSquare;
+var CanvasGrid;
+var CanvasSquare;
 var test;
