@@ -191,7 +191,7 @@ $(document).ready(function(){
 	Square.call(this,grid,color,width,index);
 	this.change = function(color){
 	    this.color = color;
-	    this.isBackground = false;
+//	    this.isBackground = false;
 	}
 	this.make = false;
 	this.pos = {x:0,y:0};
@@ -216,7 +216,7 @@ $(document).ready(function(){
 
     $('#initial , #second, #third').bind('keypress', function(e) {
 	if(e.keyCode==13){
-	    fill(g,grabFieldValues());
+	    buildCanvasFromFields();
 	}
     });
 
@@ -232,27 +232,37 @@ $(document).ready(function(){
 	}
 
 	if(e.which == 13){
-	    g.squares.forEach(function(square){
+	    cg.squares.forEach(function(square){
 		for(var i=0 ; i<=2 ; i++){
 		    if(square.iteration - 1 == i && colors[i] != ''){
-			square.change(colors[i]);
-			
+			var it = square.iteration;
+			changeSquare(square , colors[i] , it , $('canvas')[0].getContext('2d'));
 		    }
 		}
 	    });
-	    g.colors = colors;
+	    cg.colors = colors;
 	}
     });
 
     $('#colorBack').bind('keypress', function(e){
 	if(e.keyCode == 13){
-	    g.changeBackground($('#colorBack').val());
+	    console.log('vack');
+	    var newColor = $('#colorBack').val();
+	    cg.changeBackground(newColor);
+	    var canvas = $('canvas')[0].getContext('2d');
+	    cg.squares.forEach(function(square){
+		if(square.isBackground == true){
+		    console.log('treu');
+		    changeSquare(square, newColor , 0 , canvas); 
+		}
+	    })
 	}
     });
 
     $('#colorBorder').bind('keypress', function(e){
 	if(e.which == 13){
-	    g.changeBorder($('#colorBorder').val());
+	    cg.changeBorder($('#colorBorder').val());
+	    cg.draw();
 	}
     });
 
@@ -289,7 +299,8 @@ $(document).ready(function(){
 		value = value.toString();
 		$this.val(value);
 	   	
-		fill(g,grabFieldValues());
+		fill(cg,grabFieldValues());
+		cg.draw();
 	    }
 	}    
     });
@@ -298,7 +309,7 @@ $(document).ready(function(){
 	$element.css('background-color', 'red');
 	var timeoutID =  window.setTimeout(function(){ $element.css('background-color','white');} , 500 );
     }
-    
+    /*
     function buildEditableFromFields(){
 	var values = grabFieldValues();
 	g = new Grid(values.size, 'tester', values.colorBorder, values.colorBack);
@@ -306,7 +317,7 @@ $(document).ready(function(){
 	fill(g,grabFieldValues());
 	$('#test').html('editable');
     }
-
+*/
     function buildCanvasFromFields(){
 	//$('#boxwrapper').empty();
 	var values = grabFieldValues();
@@ -318,24 +329,28 @@ $(document).ready(function(){
     }
 
     function swap(){
-	if ($('#boxwrapper').children('canvas').length >= 1 || $('#boxwrapper').children('img').length>=1){
-	    console.log('swap1');
-	    var array = makeSimpleArray('swap', cg);
-	    createGridFromArray(array, g);
-	    $('#test').html('editable');
-	}else{
+	if ($('#boxwrapper').children('canvas').length >= 1){
+
+	console.log('swap1');
+	return
+	    //var array = makeSimpleArray('swap', cg);
+	    //createGridFromArray(array, g);
+	    //$('#test').html('editable');
+	}else if($('#boxwrapper').children('img').length>=1){
 	    console.log('swap2');
-	    buildcg(makeSimpleArray('swap',g));
-	    cg.draw($('canvas')[0]);
-	    $('#test').html('canvas');
+	    //buildcg(makeSimpleArray('swap',cg));
+	    cg.build();
+	    cg.draw();//$('canvas')[0]);
+//	    $('#test').html('canvas');
 	}
     }
     
 
+/*
     $('#fill').on('click', function (){
 	buildEditableFromFields();
     });
-    
+*/    
     $('#fillCan').on('click',function(){
 	buildCanvasFromFields();
     });
@@ -345,7 +360,6 @@ $(document).ready(function(){
     });
 
     fill = function (grid,values){
-//	grid.clear();
 
 	grid.colors = [values.color1,values.color2,values.color3]
 	grid.probs = [values.initial, values.second, values.third]
@@ -373,6 +387,7 @@ $(document).ready(function(){
 		square.change(color);
 		square.iteration = 1;
 		changedArray.push(square);
+		square.isBackground = false;
 	    }
 	    else{
 		square.change(background);
@@ -395,6 +410,7 @@ $(document).ready(function(){
 			neighbor.change(color);
 			neighbor.iteration = iteration;
 			changedArray.push(neighbor);
+			neighbor.isBackground = false;
 		    }
 		}
 	    });
@@ -427,10 +443,11 @@ $(document).ready(function(){
 	}
 	else if(newSide != '' && !isNaN(newSide)){
 	    newSide = parseInt(newSide);
-	    $('#tester').detach();
-	    g = new Grid(newSide, 'tester','white','white');
-	    g.build();
-	    fill(g,grabFieldValues());
+  
+	    cg = new CanvasGrid(newSide, 'cantester','white','white');
+	    cg.build();
+	    fill(cg,grabFieldValues());
+	    cg.draw();
 	}
     });
 
@@ -486,7 +503,18 @@ $(document).ready(function(){
     });
 
     $('#clear').on('click', function(){
-	g.clear();
+	cg.squares.forEach(function(sq){
+	    var r = Math.random(); 
+	    var c = $('canvas')[0].getContext('2d');
+	    if(r < 0.33){
+		changeSquare(sq,'red', 0 ,c );
+	    }else if(r >= 0.33 && r < .67){
+		changeSquare(sq,'yellow',0,c);
+	    }
+	    else if(r >0.67){
+		changeSquare(sq,'orange',0,c);
+	    }
+	})
     });
 
 	
@@ -592,6 +620,9 @@ $(document).ready(function(){
 	$('#colorBack').val(simpleArray.background);
 	$('#colorBorder').val(simpleArray.border);
 	$('#gridName').html(simpleArray.name);
+	$('.colorBox, #colorBorder, #colorBack').each(function(){
+	    $(this).css('background' , $(this).val());
+	})
     }
     
     function buildListItem(name){
@@ -696,6 +727,7 @@ $(document).ready(function(){
 		var canvas = $('<canvas id="canvas" ></canvas>');
 	//	$('#boxwrapper').empty().append(canvas);
 		buildcg(data[0]);
+		cg.build();
 	//	cg.draw($('canvas')[0]);
 		applyFieldsToPage(data[0]);
 		console.log('load time: ');
@@ -745,15 +777,14 @@ $(document).ready(function(){
     });
     
     $(document).on('click','#update', function(){
-	makeCanvas();
+//	makeCanvas();
 	var $this = $(this);
 	var entryName = $this.siblings('#gridName').html();
 	console.log(entryName);
-	console.log(g.colors);
-	
+
 	$.ajax({
 	    type:'post',
-	    data:JSON.stringify(makeSimpleArray(entryName, g)),
+	    data:JSON.stringify(makeSimpleArray(entryName , cg)),
 	    contentType:'application/json',
 	    url:'/update',
 	    beforeSend:function(){
@@ -818,7 +849,7 @@ $(document).ready(function(){
 //		console.log(squares.side+ ' ' +  squares.border +'  '+ squares.background);
 		g = new Grid(squares.side, 'tester', squares.border, squares.background);
 		
-		applyFieldsToPage(squares, g.squares);
+		applyFieldsoPage(squares, g.squares);
 
 	    }else{
 
@@ -828,9 +859,11 @@ $(document).ready(function(){
 		fill(g,values);
 //	    }	    
 	}
-    });
+    });focus blur mousedown keyup mouseup
 */
-    $('.colorBox, #colorBack, #colorBorder').on('keyup , blur, change' , function(){
+    
+    $('.colorBox, #colorBack, #colorBorder').on('change keydown mouseup mouseover mousedown keyup click blur' ,  function(){
+	console.log('inp[ut');
 	var $this = $(this);
 	var color = $this.val();
 	$this.css('background' , color);
@@ -840,7 +873,7 @@ $(document).ready(function(){
 	else{
 	    $this.css('color' , 'black');
 	}
-	if(color.length == 6 && color.toLowerCase() != color){
+	if(color.length == 6 && color.toLowerCase() != color && color[0] != '#'){
 	    color = '#' + color;
 	    $(this).val(color);
 	}
@@ -865,7 +898,7 @@ $(document).ready(function(){
 
 	console.log(nabes(clickedSquare));
 //	nabes(clickedSquare).forEach(function(square){
-//	    changeSquare(square, 'red' , 2 , canvas);
+//	    changeSquaresquare, 'red' , 2 , canvas);
 //	});
 
 	var values = grabFieldValues();
