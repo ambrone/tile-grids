@@ -6,12 +6,13 @@ var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk('localhost:27017/hello');
 var fs = require('fs');
+
 var app = express();
 
 app.set('views' , 'views');
 app.set('view engine' , 'jade');
 
-app.use(express.bodyParser());
+app.use(express.bodyParser({limit:'50mb'}));
 app.use(app.router);
 app.use(express.static('./remote_tiles'));
 
@@ -22,22 +23,17 @@ if ('development' == app.get('env')) {
 
 app.get('/' , routes.index(db));
 
-//app.get('/images' , 
 
 app.post('/saves' , function(req,res){
     console.log('post to /saves');
-   
     console.log(req.body.name);
     var obj = db.get('usercollection').find({'name':req.body.name},{}, function(e,docs){
-	console.log(docs);
 	res.json(docs);
     });
-
 });
 
 app.post('/save', function(req, res){
     console.log('post to /save');
-
     db.get('usercollection').insert(req.body);
     res.send('successful insertion of '+req.name);
 
@@ -61,7 +57,6 @@ app.post('/update', function(req,res){
     db.get('usercollection').update({'name':req.body.name},req.body,function(e,docs){
 	console.log('docs: '+docs);
 	res.json(docs);
-
     });
 });
 
@@ -89,15 +84,18 @@ app.post('/saveimg',function(req,res){
     var name = './remote_tiles/images/'+req.body.name + '.png';
     console.log('name '+ req.body.name);
     fs.writeFile(name, file,'base64', function (err) {
-	console.log(err);
+	console.log('error: ' + err);
     });
-    console.log('req.body.name: ' + req.body.name);
-//    db.get('usercollection').update({'name':req.body.name},{$set:{'img':req.body.img}},function(e,docs){
-	//console.log(res.json.docs);
-//	res.send('successfully updated' + req.body.name);
-//    });
+
+    
+});
+
+
+app.post('/login' , function(req,res){
+    console.log('post to /login');
 });
 
 
 app.listen(3000);
 console.log('listening on 3 thousand');
+
