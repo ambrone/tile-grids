@@ -13,11 +13,11 @@ html(lang="en")
           div#buttons
             button#clear randomize
             button#fillCan fill
-          if (typeof createdUser == "undefined")
-            div.loginbox
-              input(type="text", name="user", placeholder='username')
-              input(type="password", name="password", placeholder='password')
-              button#login(value="login") login
+          //if (typeof createdUser == "undefined")
+          div.loginbox
+            input(type="text", name="user", placeholder='username')
+            input(type="password", name="password", placeholder='password')
+            button#login(value="login") login
           div#probBox(style='clear:both')
             ul
               li.label(style='margin-right:15px') first
@@ -78,12 +78,12 @@ html(lang="en")
         div.clearfix
         div#boxwrapper
 
-        ul#savedlist
-          each save, i in saves
-            li.recall(name=save.name)
-              img.thumbnail(src="images/" + save.name + ".png")
-              p=save.name
-              button.delete delete
+//        ul#savedlist
+//          each save, i in saves
+  //          li.recall(name=save.name)
+    //          img.thumbnail(src="images/" + save.name + ".png")
+      //        p=save.name
+        //      button.delete delete
         div.clearfix
         button#can save thumb
         div#thumbnail

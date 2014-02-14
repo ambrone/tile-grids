@@ -490,14 +490,16 @@ $(document).ready(function(){
 ///////////////////////////////////////////////////////////////////////////////////////
 
     makeSimpleArray = function(nameOfDesign, grid){
-	var simple = {'name': nameOfDesign,
-		      'border':grid.border, 
-		      'background':grid.background, 
-		      'colors':grid.colors,
-		      'probs':grid.probs,
-		      'side':grid.side, 
-		      'squares':[]
-		     };
+	var simple = {
+	    'user':'',
+	    'name': nameOfDesign,
+	    'border':grid.border, 
+	    'background':grid.background, 
+	    'colors':grid.colors,
+	    'probs':grid.probs,
+	    'side':grid.side, 
+	    'squares':[]
+	};
 	grid.squares.forEach(function(square,index){
 	    //	    simpleArray['squares'].push(square.color);
 	    simple['squares'].push([square.color,square.iteration,square.isBackground]);
@@ -650,7 +652,7 @@ $(document).ready(function(){
 	    makeCanvas();
 	}
       	testArray = makeSimpleArray(nameOfDesign, grid);
-
+	testArray.user = $('#userWelcome').attr('name');
  	$.ajax({
 	    type: 'POST',
 	    data: JSON.stringify(testArray),
@@ -662,7 +664,7 @@ $(document).ready(function(){
 		$('#gridName').html(nameOfDesign);
 		
 		var listItem = buildListItem(nameOfDesign);
-		uploadThumb(imageSRC,nameOfDesign);
+//		uploadThumb(imageSRC,nameOfDesign);
 		$('#savedlist').append(listItem);
 		$('#savedlist').children('li').last().children('img').attr('src' , imageSRC);
 		
@@ -771,13 +773,23 @@ $(document).ready(function(){
     
     $('#login').on('click', function(){
 	var user = $('input[name="user"]').val();
-	var password = $('input[name="password"]').val();
+	var pass = $('input[name="password"]').val();
 	$.ajax({
 	    type:'post',
-	    url:'/login'
+	    url:'/login',
+	    data:{'user':user,'pass':pass},
+	    success:function(data){
+		console.log(data);
+		var welcome = $('<p id="userWelcome" name='+data.user+'>Welcome, '+data.user+'</p>'); 
+		$('.loginbox').empty().append(welcome);
+		buildGridList(data.grids);
+	    }
 	})
     });
 
+function buildGridList(gridsArray){
+    console.log(gridsArray);
+}
 
     $('#can').click(function(){
 	 html2canvas(document.getElementById('boxwrapper'), {
@@ -796,28 +808,6 @@ $(document).ready(function(){
 	 });
     });
     
-    	    
-//on initial page load, gets last grid posted to database and prints to screen, if none exists, draws one from default values
-/*    $.ajax({
-	type:'post',
-	data:JSON.stringify({'name':$('.recall').last().attr('name')}),
-	contentType:'application/json',
-	url:'/getlast',
-	beforeSend:function(data){
-	    console.log('post for /getlast from ' +$('.recall').last().attr('name') );
-	},
-	success:function(data){
-            console.log('success retreving '+$('.recall').last().attr('name'));
-            console.log('data[0]'+data[0]);
-/*	    if(data[0] != undefined){
-	
-
-	    }else{
-
-	    }	    
-	}
-    });
-*/
     
     $('.colorBox, #colorBack, #colorBorder').on('change keydown mouseup mousedown keyup click blur' ,  function(){
 	var $this = $(this);
@@ -886,20 +876,6 @@ $(document).ready(function(){
     });
 
 
-	
-/*    
-    function changeSquare(square , newColor, iteration, canvas){
-	square.change(newColor);
-	square.iteration = iteration;
-	if (iteration == 0) {
-	    square.isBackground = true;
-	}else{
-	    square.isBackground = false;
-	}
-	canvas.fillStyle = newColor;
-	canvas.fillRect(square.pos.x,square.pos.y, 10 , 10);
-    }
-*/
     function returnClickedSquare(x,y){
 	for(var i=0;i<=cg.squares.length;i++){
 	    if( cg.squares[i].pos.x == x && cg.squares[i].pos.y == y){
