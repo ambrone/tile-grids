@@ -1,0 +1,209 @@
+$(document).ready(function(){
+
+
+    uploadThumb = function(img, name){
+	var dat = {'name':name, 'img':img};
+	$.ajax({
+	    type:'post',
+	    data:JSON.stringify(dat),
+	    contentType:'application/json',
+	    url:'/saveimg',
+	    success:function(){
+		console.log('success uploading img to '+ dat.name);
+	    }
+	});
+    }
+
+    $('#save').click(function(e){
+	makeCanvas();
+	var nameOfDesign = $('#savename').val();
+	var savedNames = []
+	$('.recall').each(function(){
+	    if(nameOfDesign == $(this).html()){
+		nameOfDesign += '1';
+	    }
+	});
+	console.log(savedNames);
+	if (nameOfDesign == ''){
+	    alert('name your work then press save');
+	    return
+	}
+
+      	testArray = makeSimpleArray(nameOfDesign, g);
+ 	$.ajax({
+	    type: 'POST',
+	    data: JSON.stringify(testArray),
+	    contentType: 'application/json',
+            url: '/save',
+            success: function(data) {
+                console.log('success');
+                console.log(data);
+		$('#savedlist').append($('<li><button class="recall">'+nameOfDesign +'</button>'+'<button class="delete">delete</button></li>'));
+		$('#savename').val('');
+		$('#gridName').html(nameOfDesign);
+
+		var canvasImage = saveCanvasAsImage($('canvas')[0]);
+		uploadThumb(canvasImage , nameOfDesign);
+		$('#savedlist li').last().prepend($('<img src="'+s+'"/>').addClass('thumbnail'));
+            }
+        });
+    });
+
+    $(document).on('click', '.recall, .thumbnail', function(){
+	var entryName = $(this).html();
+
+	if (entryName ==''){
+	    entryName = $(this).siblings('.recall').html();
+	}
+	
+	var dat = {};
+	dat.name = entryName;
+	$.ajax({
+	    type:'post',
+	    data:JSON.stringify(dat),
+	    contentType:'application/json',
+	    url:'/saves',
+	    beforeSend:function(data){
+		//console.log(data);
+	    },
+	    success:function(data){
+                console.log('success');
+                console.log(data);
+		var squares  = data[0];
+		createGridFromArray(squares , g);
+		applyFieldsToPage(squares, g.squares);
+	    }
+	});
+    });
+
+    $('#test').on('click' , function(){
+	$.ajax({
+	    type:'get',
+	    data:'test',
+	    contentType:'text',
+	    url:'/test',
+	    beforeSend:function(){
+		console.log('sending test...');
+	    },
+	    success:function(data){
+		console.log(data);
+	    }
+	});
+    });
+
+    $(document).on('click' , '.delete' , function(){
+	var $this = $(this);
+	var entryName = $this.parents('.recall').attr('name');
+	var dat = {};
+	dat.name = entryName;
+	$.ajax({
+	    type:'post',
+	    data:JSON.stringify(dat),
+	    contentType:'application/json',
+	    url:'/delete',
+	    beforeSend:function(){
+		console.log('sending delete for '+ dat.name+'...');
+	    },
+	    success:function(data){
+		console.log('response:');
+		console.log(data);
+		if (data == 1){
+		    $this.parent().remove();
+		    $('#savename').val('');
+		}
+	    }
+	});
+    });
+    
+    $(document).on('click','#update', function(){
+	makeCanvas();
+	var $this = $(this);
+	var entryName = $this.siblings('#gridName').html();
+	console.log(entryName);
+	console.log(g.colors);
+	
+	$.ajax({
+	    type:'post',
+	    data:JSON.stringify(makeSimpleArray(entryName, g)),
+	    contentType:'application/json',
+	    url:'/update',
+	    beforeSend:function(){
+		console.log('sending update for: ' + entryName);
+	    },
+	    success:function(data){
+		console.log('successful update');
+		console.log(data);
+//		applyFieldsToPage(data,g.squares);
+		
+		var s = saveCanvasAsImage($('canvas')[0]);
+		console.log('s: '+s);
+		uploadThumb(s,entryName);
+		$('#savedlist li[name="'+entryName+'"]').children('.thumbnail').detach();
+		console.log($('#savedlist li').last().children('.thumbnail').length);
+		$('#savedlist li[name="'+entryName+'"]').prepend($('<img src="'+s+'"/>').addClass('thumbnail'));
+	    }
+	});
+    });
+	    
+//gets last grid posted to database and prints to screen, if none exists, draws one from default values
+    $.ajax({
+	type:'post',
+	data:JSON.stringify({'name':$('.recall').last().attr('name')}),
+	contentType:'application/json',
+	url:'/getlast',
+	beforeSend:function(data){
+	    console.log('post for /getlast from ' +$('.recall').last().attr('name') );
+	},
+	success:function(data){
+            console.log('success retreving '+$('.recall').last().attr('name'));
+            console.log('data[0]'+data[0]);
+	    if(data[0] != undefined){
+		var squares  = data[0];
+		g = new Grid(squares.side, 'tester', squares.border, squares.background);
+		g.build();
+		createGridFromArray(squares , g);
+		applyFieldsToPage(squares, g.squares);
+	    }else{
+		var values = grabFieldValues();
+		g = new Grid(200,'tester',values.border,values.background);
+		g.build();
+		fill(g);
+	    }	    
+	}
+    });
+    
+//savethumb button click print img of grid 
+    $('#can').click(function(){
+	 html2canvas(document.getElementById('boxwrapper'), {
+
+	    onrendered: function(canvas) {
+		
+		$('#thumb').children().detach();
+		$('#thumb').append($(canvas));
+		$('canvas').css('display','none');//'width','50px');
+		var canvas =$('canvas')[0];// document.getElementById("mycanvas");
+		var img    = canvas.toDataURL("image/png");
+		$('#thumb').append($('<img src="'+img+'"/>'));
+		//$('#thumb img').css('width','50px');
+	    }
+
+	});
+    });
+    
+})
+
+var g;
+var nabes;
+var partialFill;
+var initialFill;
+var testFill;
+var makeSimpleArray;
+var testArray;
+var hat;
+var testRandom;
+var grabFieldValues;
+var Grid;
+var makeImage;
+var img;
+var uploadThumb;
+var saveCanvasAsImage;

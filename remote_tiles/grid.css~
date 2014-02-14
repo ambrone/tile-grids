@@ -1,0 +1,42 @@
+
+#test{
+//  width:468px;
+//  height:468px;
+ aborder:solid 1px black;
+}
+
+.square{
+    float:left;
+    width:10px;
+    height:10px;
+    border:solid 1px black;
+}
+
+#probBox, #colorBox{
+    aborder:solid 1px black;
+}
+
+.label{float:left}
+
+input{float:left}
+
+#savedlist{
+    list-style:none;
+    width:350px;
+}
+
+
+
+#savedlist p{
+    float:left9;
+    width:290px;
+}
+
+#savedlist button{foat:right};
+
+
+#test{clear:both}
+
+{border:solid 1px black}
+
+.square{webkit-box-sizing: content-box; box-sizing:content-box}
