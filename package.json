@@ -1,4 +1,4 @@
-{"name": "hello-world",
+{"name": "dumb-tiles",
  "description": "hello test",
 "version" : "0.0.1",
 "private" : "true",
@@ -6,6 +6,7 @@
 "express":"3.4.7" , 
 "mongodb":"*" ,
 "monk" : "*",
+"mongoose" : "*",
 "jade" : "*",
 "connect-mongo":"*"
 }
