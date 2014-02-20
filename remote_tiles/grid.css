@@ -8,9 +8,13 @@
 
 #controlbox{width: 830px; float:left;}
 
-#buttons{float:left;}
+#buttons{width:150px;float:left;}
 
 .loginbox input{width:100px;}
+
+.loginbox{width:500px; float:left;}
+
+.message{float:right; margin:.3em;}
 
 textarea{width:100px; height:100px;}
 

@@ -593,8 +593,8 @@ $(document).ready(function(){
 	$('#size').val(simpleArray.side);
     }
     
-    function buildListItem(name){
-	return $('<li class="recall" name="'+name+'"><img src="images/'+name+'.png" class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button></li>');
+    function buildListItem(name,user){
+	return $('<li class="recall" name="'+name+'"><img src="images/'+user+'_'+name+'.png" class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button></li>');
     }
 
 ////////////////////////////////////////////////////////////////CANVAS
@@ -615,8 +615,9 @@ $(document).ready(function(){
 	return can;
     }
     
-    uploadThumb = function(img, name){
-	var dat = {'name':name, 'img':img};
+    uploadThumb = function(img, name, user){
+	var dat = {'name':name, 'img':img, 'user':user};
+	console.log('uploading '+dat);
 	$.ajax({
 	    type:'post',
 	    data:JSON.stringify(dat),
@@ -630,47 +631,125 @@ $(document).ready(function(){
     
 
 //A!!!!!!!!!!!J!!!!!!!!!!!!A!!!!!!!!!!!!!!!!!!X!!!!!!!!!!!!!!!!!!!AJAX
-    
-    $('#save').click(function(e){
-	var imageSRC = saveCanvasAsImage($('canvas')[0]);
-	var nameOfDesign = $('#savename').val();
 
-	$('.recall').each(function(){
-	    if(nameOfDesign == $(this).attr('name')){
-		nameOfDesign += '1';
+    
+    $('#login').on('click', function(){
+	
+	var user = $('input[name="user"]').val();
+	var pass = $('input[name="password"]').val();
+	console.log(user+pass);
+	if(user == ''){
+	    flashRed($('input[name="user"]'));
+	    return;
+	}
+	if(pass == ''){
+	    flashRed($('input[name="password"]'));
+	    return;
+	}
+	$.ajax({
+	    type:'post',
+	    url:'/login',
+	    data:{'user':user,'pass':pass},
+	    success:function(data){
+		if(data =='invalid login'){
+		    if($('.loginbox p').length > 0){
+			$('.loginbox p').remove();
+		    }
+		    $('.loginbox').append($('<p class="message">login invalid</p>'));
+		}else{
+		    console.log(data);
+		    var welcome = $('<p class="message" name='+user+'>Welcome, '+user+'</p>'); 
+		    $('.loginbox').empty().append(welcome);
+		    $('.message').css('float' , 'left');
+		    buildGridList(data);
+		}
+	    }
+	})
+    });
+    
+    $('#addUser').on('click', function(){
+	var user = $('input[name="user"]').val();
+	var pass = $('input[name="password"]').val();
+	console.log(user+pass);
+	if(user == ''){
+	    flashRed($('input[name="user"]'));
+	    return;
+	}
+	if(pass == ''){
+	    flashRed($('input[name="password"]'));
+	    return;
+	}
+	$.ajax({
+	    type:'post',
+	    url:'/addUser',
+	    data:{'user':user,
+		  'pass':pass
+		 },
+	    success:function(data){
+		console.log(data);
+		if (data == 'username taken'){
+		    $('.loginbox').append($('<p class="message">try another name</p>'));
+		}else{
+		    var welcome = $('<p class="message" name='+data.user+'>Welcome, '+data.user+'</p>'); 
+		    $('.loginbox').empty().append(welcome);
+		    $('.message').css('float' , 'left');
+		}
 	    }
 	});
-
-	if (nameOfDesign == ''){
-	    alert('name your work then press save');
-	    return
-	}
-	if ($('canvas').length >=1){
-	    var grid = cg;
-	}else{
-	    var grid = g;
-	    makeCanvas();
-	}
-      	testArray = makeSimpleArray(nameOfDesign, grid);
-	testArray.user = $('#userWelcome').attr('name');
- 	$.ajax({
-	    type: 'POST',
-	    data: JSON.stringify(testArray),
-	    contentType: 'application/json',
-            url: '/save',
-            success: function(data) {
-
-		$('#savename').val('');
-		$('#gridName').html(nameOfDesign);
-		
-		var listItem = buildListItem(nameOfDesign);
-//		uploadThumb(imageSRC,nameOfDesign);
-		$('#savedlist').append(listItem);
-		$('#savedlist').children('li').last().children('img').attr('src' , imageSRC);
-		
-            }
-        });
     });
+
+
+
+
+    $('#save').click(function(e){
+	console.log($('.message').attr('name'));
+	console.log($('canvas').length);
+	if( $('.message').attr('name') != undefined && $('canvas').length > 0){
+
+	    var nameOfDesign = $('#savename').val();	    	    
+	    console.log(nameOfDesign);
+	    if (nameOfDesign == ''){
+		alert('name your work then press save');
+		return
+	    }
+
+	    var imageSRC = saveCanvasAsImage($('canvas')[0]);
+
+	    $('.recall').each(function(){
+		if(nameOfDesign == $(this).attr('name')){
+		    nameOfDesign += '1';
+		}
+	    });
+	    if ($('canvas').length >=1){
+		var grid = cg;
+	    }
+      	    var testArray = makeSimpleArray(nameOfDesign, grid);
+	    testArray.user = $('.message').attr('name');
+	    console.log(testArray.user);
+ 	    $.ajax({
+		type: 'POST',
+		data: JSON.stringify(testArray),
+		contentType: 'application/json',
+		url: '/save',
+		success: function(data) {
+		    console.log(data);
+		    uploadThumb(imageSRC,nameOfDesign, testArray.user);
+
+		    $('#savename').val('');
+		    $('#gridName').html(nameOfDesign);
+		    
+		    var listItem = buildListItem(nameOfDesign, testArray.user);
+		    
+		    $('#savedlist').append(listItem);
+		    $('#savedlist').children('li').last().children('img').attr('src' , imageSRC);
+		    
+		}
+            });
+	}
+    });
+
+////////////////////////////////////////////new above old below///////////    
+
 
     $(document).on('click', '.thumbnail', function(){
 	var entryName = $(this).parents('.recall').attr('name');
@@ -770,25 +849,17 @@ $(document).ready(function(){
 	    }
 	});
     });
-    
-    $('#login').on('click', function(){
-	var user = $('input[name="user"]').val();
-	var pass = $('input[name="password"]').val();
-	$.ajax({
-	    type:'post',
-	    url:'/login',
-	    data:{'user':user,'pass':pass},
-	    success:function(data){
-		console.log(data);
-		var welcome = $('<p id="userWelcome" name='+data.user+'>Welcome, '+data.user+'</p>'); 
-		$('.loginbox').empty().append(welcome);
-		buildGridList(data.grids);
-	    }
-	})
-    });
 
 function buildGridList(gridsArray){
     console.log(gridsArray);
+    gridsArray.forEach(function(grid){
+	
+	var nameOfDesign = grid.name;
+	var listItem = buildListItem(nameOfDesign, grid.user);
+
+	$('#savedlist').append(listItem);
+//	$('#savedlist').children('li').last().children('img').attr('src' , imageSRC);
+    })    
 }
 
     $('#can').click(function(){
@@ -952,3 +1023,4 @@ var createCanvasFromArray;
 var CanvasGrid;
 var CanvasSquare;
 var test;
+ 

@@ -56,7 +56,22 @@ app.get('/' , function(req,res){
 
 app.post('/login' , routes.login(db,userModel));
 
+app.post('/addUser' , routes.addUser(userModel));
+
 app.post('/save', routes.save(db,userModel));
+
+
+app.post('/saveimg',function(req,res){
+    console.log('post to /saveimg');
+    var file = req.body.img.replace(/^data:image\/png;base64,/,"");
+    var name = './remote_tiles/images/'+req.body.user+'_'+req.body.name + '.png';
+    console.log('name '+ req.body.name);
+    fs.writeFile(name, file,'base64', function (err) {
+	console.log('error: ' + err);
+    });
+});
+
+
    // console.log('post to /save');
    // db.get('usercollection').insert(req.body);
    // res.send('successful insertion of '+req.name);
@@ -111,14 +126,6 @@ app.post('/delete' , function(req, res){
     fs.unlink(imageFile);
 });
 
-app.post('/saveimg',function(req,res){
-    console.log('post to /saveimg');
-    var file = req.body.img.replace(/^data:image\/png;base64,/,"");
-    var name = './remote_tiles/images/'+req.body.name + '.png';
-    console.log('name '+ req.body.name);
-    fs.writeFile(name, file,'base64', function (err) {
-	console.log('error: ' + err);
-    });
 
     
 });
