@@ -5,15 +5,6 @@ exports.index =function(db, userModel){
 }
 
 
-/*	if(req.session.user != undefined){
-	    userModel.findOne({user:req.session.user},function(err,thing){
-		if(err)console.log(err);
-		//res.render('loggedin', {'user':req.session.user, 'grids' : thing.grids});
-		res.json(thing.grids);
-	    });
-	   
-	}*/
-
 exports.login = function(db,userModel){
     return function(req,res){
 	userModel.findOne({'user':req.body.user},function(err,docs){
@@ -24,7 +15,7 @@ exports.login = function(db,userModel){
 		console.log(req.body.pass);
 		console.log(docs.pass);
 		req.session.user = req.body.user;
-		res.send('login');
+		res.send(docs.gridNames);
 		//res.send(docs.grids); this one works but is slow and send all the grids at once, want to just send names then load each as theyre clicked
 	    }else{
 		res.send('invalid login');
@@ -43,7 +34,8 @@ exports.addUser = function(userModel){
 		var newUser = new userModel(
 		    {'user':req.body.user ,
 		     'pass':req.body.pass ,
-		     'grids':[]
+		     'grids':[],
+		     'gridNames':[]
 		    });
 		newUser.save(function(err){console.log('saved ' + newUser.user)});
 		res.send(newUser);
@@ -61,6 +53,9 @@ exports.save = function(db,userModel){
 	    var arr = docs.grids;
 	    arr.push( req.body);
 	    docs.grids = arr;
+	    var names = docs.gridNames;
+	    names.push(req.body.name);
+	    docs.gridNames = names;
 	    docs.save(function(){});
 	    res.send('saved grid');
 	});

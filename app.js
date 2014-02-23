@@ -43,7 +43,7 @@ if ('development' == app.get('env')) {
 */
 
 var userSchema = mongoose.Schema(
-    {user:String , pass:String, session:Object, grids:Array}
+    {user:String , pass:String, session:Object, grids:Array , gridNames:Array}
 );
 var userModel =  mongoose.model('users' , userSchema);
 

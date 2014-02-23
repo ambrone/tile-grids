@@ -223,17 +223,23 @@ $(document).ready(function(){
 	var colors =[ $('#color1').val(), $('#color2').val(), $('#color3').val()]
 
 	if(e.which == 13){
-	    cg.squares.forEach(function(square){
-		for(var i=0 ; i<=2 ; i++){
-		    if(square.iteration - 1 == i && colors[i] != ''){
-			var it = square.iteration;
-			square.change(colors[i] , it , true);
-		    }
-		}
-	    });
-	    cg.colors = colors;
+	    changeColors(colors);
 	}
     });
+
+    function changeColors(newColors){
+	
+	cg.squares.forEach(function(square){
+	    for(var i=0 ; i<=2 ; i++){
+		if(square.iteration - 1 == i && newColors[i] != ''){
+		    var it = square.iteration;
+		    square.change(newColors[i] , it , true);
+		}
+		}
+	});
+	cg.colors = newColors;
+    }
+	
 //change background without rebuilding canvas
     $('#colorBack').bind('keypress', function(e){
 	if(e.keyCode == 13){
@@ -254,7 +260,7 @@ $(document).ready(function(){
 	    cg.draw();
 	}
     });
-
+//use up and down arrows to change values and redraw
     $('body').on('keyup', 'input', function(e) {
 
 	var $this = $(this);
@@ -295,25 +301,46 @@ $(document).ready(function(){
 		fill(cg,grabFieldValues());
 		cg.draw();
 	    }
-	}    
+	}
+	
+	if(id=='colorBorder' || id=='colorBack' || id=='color1' || id=='color2' || id == 'color3'){
+	    if(e.which == 38 || e.which == 40){
+		console.log(e.which);
+		var value = $this.val();
+		console.log(value);
+		value = parseInt(value.slice(1),16);
+		console.log(value);
+		if(value != value){return;}
+		if(e.which == 38){
+		    value += 100;
+		}
+		else{
+		    value -=100;
+		}
+		value = '#' + value.toString(16);
+		console.log(value);
+		$this.val(value);
+		changeColors([ $('#color1').val(), $('#color2').val(), $('#color3').val()]);
+	    }
+	}
     });
     
-    function flashRed($element){
-	$element.css('background-color', 'red');
-	var timeoutID =  window.setTimeout(function(){ $element.css('background-color','white');} , 500 );
-    }
-
-    function buildCanvasFromFields(){
-	var values = grabFieldValues();
-	cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
-	cg.build();
-	fill(cg, values);
-	cg.draw($('#cantester')[0]);
-	$('#test').html('canvas');
-    }
-
-
-    $('#fillCan').on('click',function(){
+	function flashRed($element){
+	    $element.css('background-color', 'red');
+	    var timeoutID =  window.setTimeout(function(){ $element.css('background-color','white');} , 500 );
+	}
+	
+	function buildCanvasFromFields(){
+	    var values = grabFieldValues();
+	    cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
+	    cg.build();
+	    fill(cg, values);
+	    cg.draw($('#cantester')[0]);
+	    $('#test').html('canvas');
+	}
+	
+	
+	$('#fillCan').on('click',function(){
 	buildCanvasFromFields();
     });
 
@@ -852,10 +879,11 @@ $(document).ready(function(){
 
 function buildGridList(gridsArray){
     console.log(gridsArray);
-    gridsArray.forEach(function(grid){
+    gridsArray.forEach(function(gridName){
 	
-	var nameOfDesign = grid.name;
-	var listItem = buildListItem(nameOfDesign, grid.user);
+	var nameOfDesign = gridName;
+	var user = $('.message').attr('name');
+	var listItem = buildListItem(nameOfDesign,user);
 
 	$('#savedlist').append(listItem);
 //	$('#savedlist').children('li').last().children('img').attr('src' , imageSRC);
@@ -995,7 +1023,6 @@ function buildGridList(gridsArray){
 	fillWithRandomColors()
 
     });
-
     
 });
 
@@ -1024,3 +1051,9 @@ var CanvasGrid;
 var CanvasSquare;
 var test;
  
+
+var x = '111111';
+x = parseInt(x,16);
+x += 30;
+x = x.toString(16);
+console.log(x);
