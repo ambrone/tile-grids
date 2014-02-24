@@ -516,9 +516,9 @@ $(document).ready(function(){
 	
 ///////////////////////////////////////////////////////////////////////////////////////
 
-    makeSimpleArray = function(nameOfDesign, grid){
+    makeSimpleArray = function(nameOfDesign, grid,user){
 	var simple = {
-	    'user':'',
+	    'user':user,
 	    'name': nameOfDesign,
 	    'border':grid.border, 
 	    'background':grid.background, 
@@ -750,8 +750,8 @@ $(document).ready(function(){
 	    if ($('canvas').length >=1){
 		var grid = cg;
 	    }
-      	    var testArray = makeSimpleArray(nameOfDesign, grid);
-	    testArray.user = $('.message').attr('name');
+      	    var testArray = makeSimpleArray(nameOfDesign, grid, $('.message').attr('name'));
+	   // testArray.user = $('.message').attr('name');
 	    console.log(testArray.user);
  	    $.ajax({
 		type: 'POST',
@@ -775,7 +775,7 @@ $(document).ready(function(){
 	}
     });
 
-////////////////////////////////////////////new above old below///////////    
+
 
 
     $(document).on('click', '.thumbnail', function(){
@@ -805,12 +805,13 @@ $(document).ready(function(){
 		applyFieldsToPage(data);
 		console.log('load time: ');
 		console.log(Date.now() - now);
-		//canvas.append($this);
 		console.log(cg);
 
 	    }
 	});
     });
+
+////////////////////////////////////////////new above old below///////////    
 
     $('#test').on('click' , function(){
 	$.ajax({
@@ -852,14 +853,14 @@ $(document).ready(function(){
     });
     
     $(document).on('click','#update', function(){
-//	makeCanvas();
+
 	var $this = $(this);
 	var entryName = $this.siblings('#gridName').html();
 	console.log(entryName);
-
+	var user = $('.message').attr('name');
 	$.ajax({
 	    type:'post',
-	    data:JSON.stringify(makeSimpleArray(entryName , cg)),
+	    data:JSON.stringify(makeSimpleArray(entryName , cg,user)),
 	    contentType:'application/json',
 	    url:'/update',
 	    beforeSend:function(){
@@ -872,7 +873,7 @@ $(document).ready(function(){
 		
 		var s = saveCanvasAsImage($('canvas')[0]);
 		console.log('s: '+s);
-		uploadThumb(s,entryName);
+		uploadThumb(s,entryName,user);
 		$('#savedlist li[name="'+entryName+'"]').children('.thumbnail').detach();
 		console.log($('#savedlist li').last().children('.thumbnail').length);
 		$('#savedlist li[name="'+entryName+'"]').prepend($('<img src="'+s+'"/>').addClass('thumbnail'));

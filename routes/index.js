@@ -63,16 +63,40 @@ exports.save = function(db,userModel){
 exports.recallGrid = function(userModel){
     return function(req,res){
 	console.log('post to /recallGrid');
-	console.log(req.body.name+ '  '+req.body.user);
+	//console.log(req.body.name+ '  '+req.body.user);
 	var g = userModel.findOne({'user':req.body.user},function(err,docs){
 	    var grids = docs.grids;
 	    
 	    grids.forEach(function(grid,index){
 		if(grid.name == req.body.name && grid.user == req.body.user){
 		    res.send(grid);
+		    return;
 		}
 	    });
 
 	});
     }
 }
+
+exports.update = function(userModel){
+    return function(req,res){
+	console.log('post to /update');
+	//console.log(req.body);
+	var g = userModel.findOne({'user':req.body.user},function(err,docs){
+	  //  console.log(docs);
+	    var match;
+	    docs.grids.forEach(function(grid,index){
+		if(grid.name == req.body.name){
+		    //console.log('grid.name ' +grid.name) 
+		    match = index;
+		}
+	    })
+//	    console.log(docs.grids);
+	    docs.grids.splice(match,1,req.body);
+	    //console.log(docs.grids);
+	    docs.save(function(){});
+	    res.send(docs.grids[match]);
+	});
+    }
+}
+

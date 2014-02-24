@@ -62,16 +62,19 @@ app.post('/save', routes.save(db,userModel));
 
 
 app.post('/saveimg',function(req,res){
-    console.log('post to /saveimg');
+    console.log('post to /saveimg '+ req.body.user + req.body.name);
     var file = req.body.img.replace(/^data:image\/png;base64,/,"");
     var name = './remote_tiles/images/'+req.body.user+'_'+req.body.name + '.png';
     console.log('name '+ req.body.name);
     fs.writeFile(name, file,'base64', function (err) {
-	console.log('error: ' + err);
+	console.log('write error: ' + err);
     });
 });
 
 app.post('/recallGrid' , routes.recallGrid(userModel));
+
+app.post('/update',routes.update(userModel));
+
 
    // console.log('post to /save');
    // db.get('usercollection').insert(req.body);
@@ -92,9 +95,6 @@ app.post('/getlast', function(req,res){
     
 });
 
-app.post('/update', function(req,res){
-    console.log('post to /update');
-    console.log(req.body.name);
 
     db.get('usercollection').update({'name':req.body.name},req.body,function(e,docs){
 	console.log('docs: '+docs);
