@@ -783,28 +783,31 @@ $(document).ready(function(){
 	var now;
 	var dat = {};
 	dat.name = entryName;
+	dat.user = $('.message').attr('name');
 //	var $this = $(this).clone().removeClass('thumbnail').addClass('tempImage');
 	$.ajax({
 	    type:'post',
 	    data:JSON.stringify(dat),
 	    contentType:'application/json',
-	    url:'/saves',
+	    url:'/recallGrid',
 	    beforeSend:function(data){
 		now = Date.now();
 		$('#boxwrapper').empty().append($('<div class="loading"/>'));
 		$('#savename').html('');
 	    },
 	    success:function(data){
-		console.log(data[0]);
+		console.log(data);
+
 		var canvas = $('<canvas id="canvas" ></canvas>');
 		$('#boxwrapper').empty().append(canvas);
-		buildcg(data[0]);
+		buildcg(data);
 		cg.draw($('canvas')[0]);
-		applyFieldsToPage(data[0]);
+		applyFieldsToPage(data);
 		console.log('load time: ');
 		console.log(Date.now() - now);
 		//canvas.append($this);
 		console.log(cg);
+
 	    }
 	});
     });

@@ -71,6 +71,7 @@ app.post('/saveimg',function(req,res){
     });
 });
 
+app.post('/recallGrid' , routes.recallGrid(userModel));
 
    // console.log('post to /save');
    // db.get('usercollection').insert(req.body);
@@ -78,13 +79,6 @@ app.post('/saveimg',function(req,res){
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /*
-app.post('/saves' , function(req,res){
-    console.log('post to /saves');
-    console.log(req.body.name);
-    var obj = db.get('usercollection').find({'name':req.body.name},{}, function(e,docs){
-	res.json(docs);
-    });
-});
 
 
 

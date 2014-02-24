@@ -11,12 +11,10 @@ exports.login = function(db,userModel){
 	    if(docs == null){
 		res.send('invalid login');
 	    }else if(req.body.pass == docs.pass){
-		
-		console.log(req.body.pass);
-		console.log(docs.pass);
 		req.session.user = req.body.user;
+		//send list of names of user's grids
 		res.send(docs.gridNames);
-		//res.send(docs.grids); this one works but is slow and send all the grids at once, want to just send names then load each as theyre clicked
+		//res.send(docs.grids); this one works but is slow and send all the grids at once
 	    }else{
 		res.send('invalid login');
 	    }
@@ -58,6 +56,23 @@ exports.save = function(db,userModel){
 	    docs.gridNames = names;
 	    docs.save(function(){});
 	    res.send('saved grid');
+	});
+    }
+}
+
+exports.recallGrid = function(userModel){
+    return function(req,res){
+	console.log('post to /recallGrid');
+	console.log(req.body.name+ '  '+req.body.user);
+	var g = userModel.findOne({'user':req.body.user},function(err,docs){
+	    var grids = docs.grids;
+	    
+	    grids.forEach(function(grid,index){
+		if(grid.name == req.body.name && grid.user == req.body.user){
+		    res.send(grid);
+		}
+	    });
+
 	});
     }
 }
