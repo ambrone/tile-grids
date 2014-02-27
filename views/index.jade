@@ -1,7 +1,7 @@
 doctype html
 html(lang="en")
   head
-    script(type='text/javascript' src='http://code.jquery.com/jquery-1.10.2.min.js')
+    script(type='text/javascript' src='https://code.jquery.com/jquery-1.10.2.min.js')
     //script(type='text/javascript' src='underscore.js')
     //script(type='text/javascript' src='html2canvas.js')
     script(type='text/javascript' src='grid.js')
@@ -10,10 +10,16 @@ html(lang="en")
     title dumb tiles
   body
     div.loginbox
-      input(type="text", name="user", placeholder='username')
-      input(type="password", name="password", placeholder='password')
-      button#login(value="login") login
-      button(id='addUser') New User?
+      if(user!=undefined)
+        p.message(name= user) Welcome, #{user}
+        button#logout logout
+      else
+        input(type="text", name="user", placeholder='username')
+        input(type="password", name="password", placeholder='password')
+        button#login(value="login") login
+        button(id='addUser') New User?
+        label remember
+          input#remember(type='checkbox' name='remember')
     div#controlbox
       div#buttons
         button#clear randomize

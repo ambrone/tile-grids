@@ -621,7 +621,7 @@ $(document).ready(function(){
     }
     
     function buildListItem(name,user){
-	return $('<li class="recall" name="'+name+'"><img src="images/'+user+'_'+name+'.png" class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button></li>');
+	return $('<li class="recall" name="'+name+'"><img src="images/'+user+'_'+name+'_th.png" class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button></li>');
     }
 
 ////////////////////////////////////////////////////////////////CANVAS
@@ -642,7 +642,7 @@ $(document).ready(function(){
 	return can;
     }
     
-    uploadThumb = function(img, name, user){
+    uploadThumb = function(img, name, user,update){
 	var dat = {'name':name, 'img':img, 'user':user};
 	console.log('uploading '+dat);
 	$.ajax({
@@ -650,8 +650,13 @@ $(document).ready(function(){
 	    data:JSON.stringify(dat),
 	    contentType:'application/json',
 	    url:'/saveimg',
-	    success:function(){
-		console.log('success uploading img to '+ dat.name);
+	    success:function(data){
+		console.log(data);
+		if(update == false){
+		    $('#savedlist').children('li').last().children('img').attr('src' , data);  //'images/'+user+'_'+name+'_th.png');// imageSRC);
+		}else{
+		    $('#savedlist li[name="'+name+'"]').prepend($('<img src="'+data+'"/>').addClass('thumbnail'));
+		}
 	    }
 	});
     }
@@ -660,10 +665,11 @@ $(document).ready(function(){
 //A!!!!!!!!!!!J!!!!!!!!!!!!A!!!!!!!!!!!!!!!!!!X!!!!!!!!!!!!!!!!!!!AJAX
 
     
-    $('#login').on('click', function(){
+    $(document).on('click','#login', function(){
 	
 	var user = $('input[name="user"]').val();
 	var pass = $('input[name="password"]').val();
+	var remember = $('#remember').prop('checked');
 	console.log(user+pass);
 	if(user == ''){
 	    flashRed($('input[name="user"]'));
@@ -676,7 +682,7 @@ $(document).ready(function(){
 	$.ajax({
 	    type:'post',
 	    url:'/login',
-	    data:{'user':user,'pass':pass},
+	    data:{'user':user,'pass':pass,'remember':remember},
 	    success:function(data){
 		if(data =='invalid login'){
 		    if($('.loginbox p').length > 0){
@@ -685,19 +691,32 @@ $(document).ready(function(){
 		    $('.loginbox').append($('<p class="message">login invalid</p>'));
 		}else{
 		    console.log(data);
-		    var welcome = $('<p class="message" name='+user+'>Welcome, '+user+'</p>'); 
-		    $('.loginbox').empty().append(welcome);
-		    $('.message').css('float' , 'left');
+		    var welcome = $('<p class="message" name='+user+'>Welcome, '+user+'</p>');
+		    $('.loginbox').empty().append(welcome).append($('<button id="logout">logout</button>')); 
+
 		    buildGridList(data);
 		}
 	    }
 	})
     });
     
-    $('#addUser').on('click', function(){
+    $(document).on('click' , '#logout' , function(){
+	$('#savedlist').empty();
+	$('.loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button>'));
+	$.ajax({
+	    type:'post',
+	    url:'/logout',
+	    success:function(data){
+		console.log(data +' logged out and cookie deleted');
+	    }
+	})
+    })
+
+    $(document).on('click','#addUser', function(){
 	var user = $('input[name="user"]').val();
 	var pass = $('input[name="password"]').val();
-	console.log(user+pass);
+	var remember = $('#remember').prop('checked');
+	console.log(user+pass+remember);
 	if(user == ''){
 	    flashRed($('input[name="user"]'));
 	    return;
@@ -710,7 +729,8 @@ $(document).ready(function(){
 	    type:'post',
 	    url:'/addUser',
 	    data:{'user':user,
-		  'pass':pass
+		  'pass':pass,
+		  'remember':remember
 		 },
 	    success:function(data){
 		console.log(data);
@@ -718,7 +738,7 @@ $(document).ready(function(){
 		    $('.loginbox').append($('<p class="message">try another name</p>'));
 		}else{
 		    var welcome = $('<p class="message" name='+data.user+'>Welcome, '+data.user+'</p>'); 
-		    $('.loginbox').empty().append(welcome);
+		    $('.loginbox').empty().append(welcome).append($('<button id="logout">logout</button>'));
 		    $('.message').css('float' , 'left');
 		}
 	    }
@@ -760,15 +780,14 @@ $(document).ready(function(){
 		url: '/save',
 		success: function(data) {
 		    console.log(data);
-		    uploadThumb(imageSRC,nameOfDesign, testArray.user);
 
 		    $('#savename').val('');
 		    $('#gridName').html(nameOfDesign);
 		    
 		    var listItem = buildListItem(nameOfDesign, testArray.user);
+		    uploadThumb(imageSRC,nameOfDesign, testArray.user,false);
 		    
 		    $('#savedlist').append(listItem);
-		    $('#savedlist').children('li').last().children('img').attr('src' , imageSRC);
 		    
 		}
             });
@@ -811,7 +830,7 @@ $(document).ready(function(){
 	});
     });
 
-////////////////////////////////////////////new above old below///////////    
+
 
     $('#test').on('click' , function(){
 	$.ajax({
@@ -833,6 +852,7 @@ $(document).ready(function(){
 	var entryName = $this.parents('.recall').attr('name');
 	var dat = {};
 	dat.name = entryName;
+	dat.user = $('.message').attr('name');
 	$.ajax({
 	    type:'post',
 	    data:JSON.stringify(dat),
@@ -844,7 +864,7 @@ $(document).ready(function(){
 	    success:function(data){
 		console.log('response:');
 		console.log(data);
-		if (data == 1){
+		if (data){
 		    $this.parent().remove();
 		    $('#savename').val('');
 		}
@@ -873,10 +893,8 @@ $(document).ready(function(){
 		
 		var s = saveCanvasAsImage($('canvas')[0]);
 		console.log('s: '+s);
-		uploadThumb(s,entryName,user);
+		uploadThumb(s,entryName,user,true);
 		$('#savedlist li[name="'+entryName+'"]').children('.thumbnail').detach();
-		console.log($('#savedlist li').last().children('.thumbnail').length);
-		$('#savedlist li[name="'+entryName+'"]').prepend($('<img src="'+s+'"/>').addClass('thumbnail'));
 	    }
 	});
     });
