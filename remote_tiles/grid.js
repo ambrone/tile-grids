@@ -702,7 +702,7 @@ $(document).ready(function(){
     
     $(document).on('click' , '#logout' , function(){
 	$('#savedlist').empty();
-	$('.loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button>'));
+	$('.loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button><label>remember?<input type="checkbox" id="remember" name="remember"></label>'));
 	$.ajax({
 	    type:'post',
 	    url:'/logout',
@@ -860,13 +860,13 @@ $(document).ready(function(){
 	    url:'/delete',
 	    beforeSend:function(){
 		console.log('sending delete for '+ dat.name+'...');
+		$this.parent().remove();
+		$('#savename').val('');
 	    },
 	    success:function(data){
 		console.log('response:');
-		console.log(data);
 		if (data){
-		    $this.parent().remove();
-		    $('#savename').val('');
+		    console.log(data);
 		}
 	    }
 	});
@@ -1045,7 +1045,7 @@ function buildGridList(gridsArray){
 	fillWithRandomColors()
 
     });
-    
+    $('#clear').trigger('click');
 });
 
 
@@ -1073,9 +1073,3 @@ var CanvasGrid;
 var CanvasSquare;
 var test;
  
-
-var x = '111111';
-x = parseInt(x,16);
-x += 30;
-x = x.toString(16);
-console.log(x);

@@ -13,7 +13,6 @@ var routes = require('./routes');
 var db = mongoose.connection;
 var jade = require('jade');
 var bcrypt = require('bcrypt');
-//var gm = require('gm');
 var gm = require('gm').subClass({ imageMagick: true });
 module.exports = mongoose.connections[0];
 
@@ -23,13 +22,6 @@ app.set('views' , 'views');
 app.set('view engine' , 'jade');
 
 app.use(express.bodyParser({limit:'50mb'}));
-
-
-gm('./a_pink.png').size(function (err, data) {
-    if (!err) console.log(data);
-    else console.log(err);
-});
-
 
 app.use(express.cookieParser('amber'));
 app.use(express.session({
@@ -52,7 +44,7 @@ var userSchema = mongoose.Schema(
 );
 var userModel =  mongoose.model('users' , userSchema);
 
-app.get('/' , routes.index());
+app.get('/' , routes.index(userModel));
 
 app.post('/login' , routes.login(userModel,bcrypt));
 

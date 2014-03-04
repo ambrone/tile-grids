@@ -11,8 +11,9 @@
 #buttons{width:150px;float:left;}
 
 .loginbox input{width:100px;}
+#remember{width:20px}
 
-.loginbox{width:500px; float:left;}
+.loginbox{width:530px; float:left;}
 
 .message{float:left; margin:.3em;}
 

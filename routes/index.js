@@ -1,9 +1,11 @@
-exports.index =function(){
+exports.index =function(userModel){
     console.log('poop');
     return function(req, res){
 	console.log('req.session.user '+ req.session.user);
 	if(req.session.user){
-	    res.render('index', {user:req.session.user});
+	    userModel.findOne({user:req.session.user},function(err,docs){
+		res.render('index', {user:req.session.user,grids:docs.grids});
+	    });
 	}else{
 	    res.render('index',{});
 	}

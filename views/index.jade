@@ -85,13 +85,14 @@ html(lang="en")
       h2#gridName
       div.clearfix
       div#boxwrapper
-
-      ul#savedlist
-//          each save, i in saves
-  //          li.recall(name=save.name)
-    //          img.thumbnail(src="images/" + save.name + ".png")
-      //        p=save.name
-        //      button.delete delete
+      if(user!=undefined)
+        ul#savedlist
+            each grid, i in grids
+              li.recall(name=grid.name)
+                img.thumbnail(src="images/" + grid.user + '_' + grid.name + "_th.png")
+                p=grid.name
+                button.delete delete
+                a(href="images/" + grid.user + '_' + grid.name + ".png" target="_blank" download='grid.png' ) download
       div.clearfix
       button#can save thumb
       div#thumbnail
