@@ -10,6 +10,7 @@ var MongoStore = require('connect-mongo')(express);
 mongoose.connect('localhost:27017/hello');
 var routes = require('./routes');
 
+//hat
 var db = mongoose.connection;
 var jade = require('jade');
 var bcrypt = require('bcrypt');
