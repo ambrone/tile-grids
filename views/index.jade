@@ -85,8 +85,8 @@ html(lang="en")
       h2#gridName
       div.clearfix
       div#boxwrapper
-      if(user!=undefined)
-        ul#savedlist
+      ul#savedlist
+        if(user!=undefined)
             each grid, i in grids
               li.recall(name=grid.name)
                 img.thumbnail(src="images/" + grid.user + '_' + grid.name + "_th.png")
