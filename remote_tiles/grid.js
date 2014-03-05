@@ -620,9 +620,7 @@ $(document).ready(function(){
 	$('#size').val(simpleArray.side);
     }
     
-    function buildListItem(name,user){
-	return $('<li class="recall" name="'+name+'"><img src="images/'+user+'_'+name+'_th.png" class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button></li>');
-    }
+
 
 ////////////////////////////////////////////////////////////////CANVAS
     
@@ -899,18 +897,38 @@ $(document).ready(function(){
 	});
     });
 
-function buildGridList(gridsArray){
-    console.log(gridsArray);
-    gridsArray.forEach(function(gridName){
-	
-	var nameOfDesign = gridName;
-	var user = $('.message').attr('name');
-	var listItem = buildListItem(nameOfDesign,user);
+    function buildLoggedInView(user,gridsArray){
+	//change login to welcome
+	var welcome = $('<p class="message" name='+user+'>Welcome, '+user+'</p>');
+	$('.loginbox').empty().append(welcome).append($('<button id="logout">logout</button>')); 
 
-	$('#savedlist').append(listItem);
-//	$('#savedlist').children('li').last().children('img').attr('src' , imageSRC);
-    })    
-}
+	//add list of grids
+	var gridList = $('#savedList');
+	gridsArray.forEach(function(gridName,index){
+	    var listItem = $('<li class="recall" name="'+gridName+'">
+                              <img src="images/'+user+'_'+gridName+'_th.png" class="thumbnail"/>
+                              <p>'+gridName+'</p>
+                              <button class="delete">delete</button>
+                              </li>');
+	    gridList.append(listItem);
+    }
+
+    function buildGridList(gridsArray){
+	console.log(gridsArray);
+	gridsArray.forEach(function(gridName){
+	    
+	    var nameOfDesign = gridName;
+	    var user = $('.message').attr('name');
+	    var listItem = buildListItem(nameOfDesign,user);
+	    
+	    $('#savedlist').append(listItem);
+	   
+	})    
+    }
+
+    function buildListItem(name,user){
+	return $('<li class="recall" name="'+name+'"><img src="images/'+user+'_'+name+'_th.png" class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button></li>');
+    }
 
     $('#can').click(function(){
 	 html2canvas(document.getElementById('boxwrapper'), {
