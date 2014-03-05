@@ -76,7 +76,7 @@ input{
 
 }
 
-#savedlist{
+#savedList{
     list-style:none;
     width:250px;
     /*height:230px;*/
@@ -90,14 +90,14 @@ input{
 }
 
 
-#savedlist li{clear:both; }
+#savedList li{clear:both; }
 
-.thumbnail,#savedlist p{
+.thumbnail,#savedList p{
     float:left;
     margin:5px
 }
 
-#savedlist p{
+#savedList p{
     padding:14px
 }
 
@@ -106,7 +106,7 @@ input{
     margin:17px;
 }
 
-#savedlist img{width:50px;}
+#savedList img{width:50px;}
 
 
 #test{clear:both}
