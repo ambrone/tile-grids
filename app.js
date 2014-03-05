@@ -92,6 +92,6 @@ var options = {
     key:fs.readFileSync('./tiles.key'),
     cert:fs.readFileSync('./tiles.crt')
 }
-app.listen(3000);
+//app.listen(3000);
 https.createServer(options, app).listen(443);
 console.log('listening on 3 thousand');
