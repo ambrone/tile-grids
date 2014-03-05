@@ -61,16 +61,24 @@ app.post('/saveimg',function(req,res){
     console.log('name '+'.png'+ req.body.name);
     fs.writeFile(name+'.png', file,'base64', function (err) {
 	console.log('write error: ' + err);
-	gm(name+'.png').crop(100,100,0,0).write(name+'_th.png',function(err){
-	    console.log(err)
-	    name = name.slice(15);
-	    res.send(name+'_th.png');
-	});
-	
-    });
-    
-});
-
+	//if image is smaller than 100x100, make thumbnail same as image, otherwise crop for thumb
+	gm(name+'.png').size(function(err,val){
+	    if(val.height <= 100 || val.width<=100){
+		name = name.slice(15);
+		gm(name+'.png').write(name+'_th.png',function(err){
+		    name = name.slice(15);
+		    res.send(name + '_th.png');
+		});
+	    }else{
+		gm(name+'.png').crop(100,100,0,0).write(name+'_th.png',function(err){
+		    console.log(err)
+		    name = name.slice(15);
+		    res.send(name+'_th.png');
+		});
+	    }
+	})
+    })
+})
 
 app.post('/recallGrid' , routes.recallGrid(userModel));
 
