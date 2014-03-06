@@ -1,6 +1,11 @@
-*~
 tiles.crt
 tiles.csr
 tiles.key
-*.png
-*.gif
+tile.key.org
+remote_tiles/html2canvas.js
+remote_tiles/underscore.js
+remote_tiles/bootstrap.min.css
+remote_tiles/images/**
+**/*.*~
+**/\#*#
+node_modules/**
