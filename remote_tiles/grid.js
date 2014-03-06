@@ -629,16 +629,20 @@ $(document).ready(function(){
 	//add list of grids
 	var gridList = $('#savedList');
 	console.log(gridList.length);
-	gridsArray.forEach(function(gridName,index){
-	    var listItem = $('<li class="recall" name="'+gridName+'"><img src="images/'+user+'_'+gridName+'_th.png" class="thumbnail"/><p>'+gridName+'</p><button class="delete">delete</button><a href="images/' + user + '_' + gridName +'.png" target="_blank" download="grid.png">download</a></li>');
-	    gridList.append(listItem);
-	})
+	if(arguments.length >1){
+	    gridsArray.forEach(function(gridName,index){
+		gridList.append(buildListItem(gridName,user));
+	    })
+	}
     }
 
-//a(href="images/" + grid.user + '_' + grid.name + ".png" target="_blank" download='grid.png' ) download
+    function buildLoggedOutView(){
+	$('#savedList').empty();
+	$('.loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button><label>remember?<input type="checkbox" id="remember" name="remember"></label>'));
+    }
 
     function buildListItem(name,user){
-	return $('<li class="recall" name="'+name+'"><img src="images/'+user+'_'+name+'_th.png" class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button></li>');
+	return $('<li class="recall" name="'+name+'"><img src="images/'+user+'_'+name+'_th.png" class="thumbnail"/><p>'+name+'</p><button class="delete">delete</button><a href="images/' + user + '_' + name +'.png" target="_blank" download="grid.png">download</a></li>');
     }
 
 ////////////////////////////////////////////////////////////////CANVAS
@@ -670,9 +674,11 @@ $(document).ready(function(){
 	    success:function(data){
 		console.log(data);
 		if(update == false){
-		    $('#savedlist').children('li').last().children('img').attr('src' , data);  //'images/'+user+'_'+name+'_th.png');// imageSRC);
+		    var listItem = buildListItem(name,user);
+		    $('#savedList').append(listItem);
+		    //$('#savedList').children('li').last().children('img').attr('src' , data);  //'images/'+user+'_'+name+'_th.png');// imageSRC);
 		}else{
-		    $('#savedlist li[name="'+name+'"]').prepend($('<img src="'+data+'"/>').addClass('thumbnail'));
+		    $('#savedList li[name="'+name+'"]').prepend($('<img src="'+data+'"/>').addClass('thumbnail'));
 		}
 	    }
 	});
@@ -722,8 +728,7 @@ $(document).ready(function(){
     });
     
     $(document).on('click' , '#logout' , function(){
-	$('#savedlist').empty();
-	$('.loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button><label>remember?<input type="checkbox" id="remember" name="remember"></label>'));
+	buildLoggedOutView();
 	$.ajax({
 	    type:'post',
 	    url:'/logout',
@@ -737,7 +742,6 @@ $(document).ready(function(){
 	var user = $('input[name="user"]').val();
 	var pass = $('input[name="password"]').val();
 	var remember = $('#remember').prop('checked');
-	console.log(user+pass+remember);
 	if(user == ''){
 	    flashRed($('input[name="user"]'));
 	    return;
@@ -758,9 +762,11 @@ $(document).ready(function(){
 		if (data == 'username taken'){
 		    $('.loginbox').append($('<p class="message">try another name</p>'));
 		}else{
-		    var welcome = $('<p class="message" name='+data.user+'>Welcome, '+data.user+'</p>'); 
-		    $('.loginbox').empty().append(welcome).append($('<button id="logout">logout</button>'));
-		    $('.message').css('float' , 'left');
+		    buildLoggedInView(user);
+		    //var welcome = $('<p class="message" name='+data.user+'>Welcome, '+data.user+'</p>'); 
+		    //$('.loginbox').empty().append(welcome).append($('<button id="logout">logout</button>'));
+		    //$('.message').css('float' , 'left');
+		    
 		}
 	    }
 	});
@@ -800,24 +806,19 @@ $(document).ready(function(){
 		contentType: 'application/json',
 		url: '/save',
 		success: function(data) {
+		    uploadThumb(imageSRC,nameOfDesign, testArray.user,false);
 		    console.log(data);
-
 		    $('#savename').val('');
 		    $('#gridName').html(nameOfDesign);
-		    
-		    var listItem = buildListItem(nameOfDesign, testArray.user);
-		    uploadThumb(imageSRC,nameOfDesign, testArray.user,false);
-		    
-		    $('#savedList').append(listItem);
+//		    var listItem = buildListItem(nameOfDesign, testArray.user);
+//		    $('#savedList').append(listItem);
 		    
 		}
             });
 	}
     });
 
-
-
-
+ 
     $(document).on('click', '.thumbnail', function(){
 	var entryName = $(this).parents('.recall').attr('name');
 	var now;
