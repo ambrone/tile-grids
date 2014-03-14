@@ -116,3 +116,8 @@ input{
 .clearfix{clear:both}
 
 lcanvas{border:solid 1px black}
+
+
+.adminGridList{
+    display:none;
+}

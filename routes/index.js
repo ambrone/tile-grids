@@ -163,3 +163,12 @@ function removeLetters(letter,str){
 	return str[0] + removeLetters(letter,str.slice(1));
     }    
 }
+
+exports.admin = function(userModel,bcrypt){
+    return function(req,res){
+	userModel.find({},{'gridNames':1,'user':1},function(err,docs){    
+	    res.render('admin', {users : docs});
+	});
+    }
+};
+

@@ -47,6 +47,8 @@ var userModel =  mongoose.model('users' , userSchema);
 
 app.get('/' , routes.index(userModel));
 
+app.get('/admin' , routes.admin(userModel,bcrypt));
+
 app.post('/login' , routes.login(userModel,bcrypt));
 
 app.post('/addUser' , routes.addUser(userModel,bcrypt));

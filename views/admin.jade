@@ -1,0 +1,22 @@
+doctype html
+html(lang="en")
+  head
+    script(type='text/javascript' src='https://code.jquery.com/jquery-1.10.2.min.js')
+    //script(type='text/javascript' src='underscore.js')
+    //script(type='text/javascript' src='html2canvas.js')
+    script(type='text/javascript' src='grid.js')
+    //link(rel='stylesheet' href='ootstrap.min.css')
+    link(rel='stylesheet' href='grid.css')
+    title dumb tiles admin
+  body
+    ul#adminUserList
+      each user, i in users
+        li
+          input(type='text' value=user.user name='hat')
+          button delete
+          button save
+          button.adminShowGrids show grids
+          ul.adminGridList
+            each gridName, i in user.gridNames
+              li=gridName
+              button delete
