@@ -90,10 +90,12 @@ app.post('/delete' , routes.delete(fs,userModel));
 
 app.post('/logout', routes.logout());
 
+app.post('/adminUpdate' , routes.adminUpdate(userModel));
+
 var options = {
     key:fs.readFileSync('./tiles.key'),
     cert:fs.readFileSync('./tiles.crt')
 }
 //app.listen(3000);
 https.createServer(options, app).listen(443);
-console.log('listening on 3 thousand');
+console.log('listening on 443');

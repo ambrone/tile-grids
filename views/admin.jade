@@ -1,7 +1,7 @@
 doctype html
 html(lang="en")
   head
-    script(type='text/javascript' src='https://code.jquery.com/jquery-1.10.2.min.js')
+    script(type='text/javascript' src='jquery-2.1.0.min.js')
     //script(type='text/javascript' src='underscore.js')
     //script(type='text/javascript' src='html2canvas.js')
     script(type='text/javascript' src='grid.js')
@@ -11,12 +11,12 @@ html(lang="en")
   body
     ul#adminUserList
       each user, i in users
-        li
-          input(type='text' value=user.user name='hat')
-          button delete
+        li(name=user.user)
+          input(type='text' class='adminUsername' value=user.user)
+          button.adminDeleteUser delete
           button save
           button.adminShowGrids show grids
           ul.adminGridList
             each gridName, i in user.gridNames
-              li=gridName
-              button delete
+              li.adminGrid(name=gridName)=gridName
+              button.adminDeleteGrid delete

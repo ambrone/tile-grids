@@ -662,7 +662,7 @@ $(document).ready(function(){
 	    idleTimer = window.setTimeout(function(){
 		$('#logout').trigger('click');
 		alert('You have been logged out due to inactivity');
-	    }, 1000*60*3);
+	    }, 1000*60*10);
 	}
     }
     $(document).on('click',function(){
@@ -1000,12 +1000,72 @@ function buildGridList(gridsArray){
 	fillWithRandomColors()
 
     });
-    $('#clear').trigger('click');
 
     $('.adminShowGrids').on('click' , function(){
-	console.log('adminshowgrids');
+	var userName = $(this).parent().attr('name');
 	$(this).next('.adminGridList').slideToggle();
+	$(this).next('.adminGridList').children('li').each(function(index,grid){
+	    var gridName = $(grid).attr('name');
+	    if($(grid).children('img').length == 0){
+		$(grid).append($('<img src="images/'+userName+'_'+gridName+'_th.png"></img>'));
+	    }
+	});
     });
+
+    $('.adminUsername').on('keyup', function(){
+	var $this = $(this);
+	if(typeof adminInputTimer == 'number'){
+	    window.clearTimeout(adminInputTimer);
+	    delete adminInputTimer;
+	}
+	
+	adminInputTimer = window.setTimeout(function(){
+	    var dat ={};
+	    dat.type = 'usernameUpdate';
+	    dat.user = $this.parent().attr('name');
+	    dat.newUser = $this.val();
+	    $.ajax({
+		type:'post',
+		url:'/adminUpdate',
+		contentType:'application/json',
+		data:JSON.stringify(dat),
+		beforeSend:function(){
+		    console.log('sending name update for ' + $this.attr('name'));
+		},
+		success:function(data){
+		    console.log(data);
+		    $this.parent().attr('name' , dat.newUser);
+		}
+	    })
+	},3000)
+    })
+
+    $('.adminDeleteUser').on('click',function(){
+	if(typeof adminInputTimer == 'number'){
+	    window.clearTimeout(adminInputTimer);
+	    delete adminInputTimer;
+	}
+	var $this = $(this);
+	var user = $this.parent().attr('name');
+	console.log(user);
+	if( confirm('are you sure you want to permanately delete user ' + user+'?') ){
+	    $.ajax({
+		type:'post',
+		url:'adminUpdate',
+		contentType:'application/json',
+		data:JSON.stringify({'user':user,'type':'deleteUser'}),
+		beforeSend:function(){
+		    console.log('sending delete for user '+user);
+		},
+		success:function(data){
+		    console.log(data);
+		    $this.parent().remove();
+		}
+	    })
+	}
+    })
+
+
 
 });
 
