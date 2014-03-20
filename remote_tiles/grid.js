@@ -1,9 +1,8 @@
 $(document).ready(function(){
-
     function getRand(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) + min);
     }
-    
+    /*
     Grid = function(side,id,border,background){
 	var s = parseInt(side);
 	while(s%11 !=0){
@@ -23,12 +22,10 @@ $(document).ready(function(){
 	    });
 	    this.changeBorder('black');
 	}
-	
 	this.changeBorder = function(newColor){
 	    $('.square').css('border' , '1px solid '+newColor);
 	    this.border = newColor;
 	}
-
 	this.changeBackground = function(newColor){
 	    this.squares.forEach(function(square){
 		if(square.isBackground  == true){
@@ -38,11 +35,39 @@ $(document).ready(function(){
 	    this.background = newColor;
 	}
     }
-
-
-    
+   */ 
     CanvasGrid = function(side,id,border,background){
-	Grid.call(this,side,id,border,background);
+	//Grid.call(this,side,id,border,background);
+	var s = parseInt(side);
+	while(s%11 !=0){
+	    s+=1;
+	}
+	this.side = s;
+	this.squares = [];
+	this.probs = [];
+	this.colors = []
+	this.border = border;
+	this.background = background;
+	this.clear = function(){
+	    this.squares.forEach(function(square){
+		square.change('white');
+		square.isBackground = true;
+		square.iteration = 0;
+	    });
+	    this.changeBorder('black');
+	}
+	this.changeBorder = function(newColor){
+	    $('.square').css('border' , '1px solid '+newColor);
+	    this.border = newColor;
+	}
+	this.changeBackground = function(newColor){
+	    this.squares.forEach(function(square){
+		if(square.isBackground  == true){
+		    square.change(newColor);
+		}
+	    });
+	    this.background = newColor;
+	}
 
 	this.canvas = $('canvas')[0];
 
@@ -90,9 +115,9 @@ $(document).ready(function(){
 	}
     };
 
-    CanvasGrid.prototype = Object.create(Grid.prototype);
+    //CanvasGrid.prototype = Object.create(Grid.prototype);
 
-    function Square(grid,color, width, index){
+    Square = function(grid,color, width, index){
 	this.color = color;
 	this.width = width;
 	this.index = index;
@@ -235,7 +260,7 @@ $(document).ready(function(){
 		    var it = square.iteration;
 		    square.change(newColors[i] , it , true);
 		}
-		}
+	    }
 	});
 	cg.colors = newColors;
     }
@@ -292,8 +317,6 @@ $(document).ready(function(){
 		    flashRed($this);
 		    
 		}
-		
-	
 		value = value.toFixed(2);
 		value = value.toString();
 		$this.val(value);
@@ -303,7 +326,7 @@ $(document).ready(function(){
 	    }
 	}
 	
-	if(id=='colorBorder' || id=='colorBack' || id=='color1' || id=='color2' || id == 'color3'){
+	else if(id=='colorBorder' || id=='colorBack' || id=='color1' || id=='color2' || id == 'color3'){
 	    if(e.which == 38 || e.which == 40){
 		console.log(e.which);
 		var value = $this.val();
@@ -322,6 +345,8 @@ $(document).ready(function(){
 		$this.val(value);
 		changeColors([ $('#color1').val(), $('#color2').val(), $('#color3').val()]);
 	    }
+	}else if(id == 'size'){
+	    if(e.which == 13) $('#rebuild').trigger('click');
 	}
     });
     
@@ -332,38 +357,29 @@ $(document).ready(function(){
 	
 	function buildCanvasFromFields(){
 	    var values = grabFieldValues();
+	    if(values.size >= 5001) {
+		alert('thats too big');
+		return;
+	    }
 	    cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
 	    cg.build();
 	    fill(cg, values);
 	    cg.draw($('#cantester')[0]);
-	    $('#test').html('canvas');
 	}
 	
 	
 	$('#fillCan').on('click',function(){
-	buildCanvasFromFields();
-    });
+	    buildCanvasFromFields();
+	});
 
 //311b6955
     fill = function (grid,values){
 	grid.colors = [values.color1,values.color2,values.color3]
 	grid.probs = [values.initial, values.second, values.third]
-
+	
 	partialFill(partialFill(initialFill(grid.squares,values.color1, values.initial, values.colorBack), values.color2, values.second, 2, values.least2), values.color3, values.third, 3, values.least3);
-
+	
 	grid.changeBorder(values.colorBorder);	
-/*
-	if (values.colorBorder == 'self'){
-	    for(i=0;i<g.squares.length;i++){
-		var color = $('#'+i).css('background-color'); 
-		$('#'+i).css('border', 'solid 1px '+color);
-	    }
-	}else{
-	   // $('.square').css('border', 'solid 1px '+colorBorder);
-//	    console.log(values.colorBorder);
-
-	}
-*/	
     }
 
     initialFill = function(squares, color, prob, background){
@@ -397,7 +413,7 @@ $(document).ready(function(){
 		}
 	    });
 	});
-	 return changedArray;
+	return changedArray;
     }
     
     function randomArray(prob, least){
@@ -446,69 +462,9 @@ $(document).ready(function(){
 	$inputs.each(function(){
 	    values[$(this).attr('id')] = $(this).val();
 	});
-
 	return values;
     }
-/*    
-    $(document).on('click', '.square', function(){
-	var values = grabFieldValues();
-
-	console.log(values);
-	var indx = $(this).attr('id');
-	
-	g.squares[indx].change(values.color1 , 1);
-	var randArray = randomArray(values.second,values.least2);
-	console.log('1st Array: '+randArray);
-	var changedNeighbors =[];
-	nabes(g.squares[indx]).forEach(function(neighbor,index){
-		if(randArray[index] == 1){
-		    if(neighbor.isBackground == true){
-			neighbor.change(values.color2 , 2);
-//			neighbor.iteration = 2;
-			changedNeighbors.push(neighbor);
-		    }
-		}
-	});
-
-	var changedNeighbors2 = []
-	randArray = randomArray(values.third, values.least3);
-	console.log('2nd array '+randArray);
-	changedNeighbors.forEach(function(neighbor,index){
-   
-	    nabes(neighbor).forEach(function(nabe, index){
-
-		if(randArray[index] == 1){
-		    if(nabe.isBackground == true){
-			nabe.change(values.color3 , 3);
-//			nabe.iteration = 3;
-			changedNeighbors2.push(nabe);
-		    }
-		}
-	    });
-	});
-    
-    });
-*/
     $('#clear').on('click', function(){
-	/*cg.squares.forEach(function(sq){
-	    var r = Math.random(); 
-	    var c = $('canvas')[0].getContext('2d');
-	    if(r < 0.33){
-//		changeSquare(sq,'red', 0 ,c );
-		sq.change('red' , 0);
-	    }else if(r >= 0.33 && r < .67){
-//		changeSquare(sq,'yellow',0,c);
-		sq.change('yellow' , 0);
-	    }
-	    else if(r >0.67){
-//		changeSquare(sq,'orange',0,c);
-		sq.change('orange' , 0);
-	    }
-	})
-*/
-	
-
-
     });
 
 	
@@ -517,6 +473,7 @@ $(document).ready(function(){
 ///////////////////////////////////////////////////////////////////////////////////////
 
     makeSimpleArray = function(nameOfDesign, grid,user){
+	//builds simple grid object for sending to server, simple as in just data no methods
 	var simple = {
 	    'user':user,
 	    'name': nameOfDesign,
@@ -535,31 +492,7 @@ $(document).ready(function(){
 
 	return simple;
     }
-/*    
-    createGridFromArray = function(simpleArray){
-	//builds grid on page from database saved grid
-	$('#drawing').removeClass('hidden');
-	var s = simpleArray;
-	console.log('s: '+s);
-	g = new Grid(s.side , 'tester' , s.border , s.background);
-	g.build();
-	var len = g.squares.length-1;
-	console.log(simpleArray);
-	for(var i=0;i<=len;i++){
-	    g.squares[i].change(simpleArray.squares[i][0]);
-	    g.squares[i].iteration = simpleArray['squares'][i][1];
-	    g.squares[i].isBackground = simpleArray['squares'][i][2];
-	}
-				
-
-	g.changeBackground(simpleArray['background'])
-	g.changeBorder(simpleArray['border']);
-	g.colors = simpleArray['colors'];
-	g.probs = simpleArray['probs'];
-	
-	$('#drawing').addClass('hidden');
-    }
-  */  
+/*
     createCanvasFromArray = function(simpleArray, canvas){
 	canvas.height = simpleArray.side+12;
 	canvas.width = simpleArray.side+12;
@@ -583,7 +516,7 @@ $(document).ready(function(){
 	}
 	
     }
-
+*/
     function buildcg(simpleArray){
 	var s = simpleArray;
 	cg = new CanvasGrid(s.side, 'cantester', s.border, s.background);
@@ -646,7 +579,7 @@ $(document).ready(function(){
     }
 
 ////////////////////////////////////////////////////////////////CANVAS
-    
+/*    
     makeCanvas = function(){
 	html2canvas(document.getElementById('boxwrapper'), {
 	    onrendered:function(canvas){
@@ -656,7 +589,7 @@ $(document).ready(function(){
 	    }
 	});
     }
-
+*/
     saveCanvasAsImage = function(canvas){
 	var can = canvas.toDataURL('image/png');
 	console.log(can);
@@ -664,6 +597,7 @@ $(document).ready(function(){
     }
     
     uploadThumb = function(img, name, user,update){
+	//upload image to server, server returns path of image, grid is then added to #savedList
 	var dat = {'name':name, 'img':img, 'user':user};
 	console.log('uploading '+dat);
 	$.ajax({
@@ -689,7 +623,6 @@ $(document).ready(function(){
 
     
     $(document).on('click','#login', function(){
-	
 	var user = $('input[name="user"]').val();
 	var pass = $('input[name="password"]').val();
 	var remember = $('#remember').prop('checked');
@@ -712,21 +645,31 @@ $(document).ready(function(){
 			$('.loginbox p').remove();
 		    }
 		    $('.loginbox').append($('<p class="message">login invalid</p>'));
-		}else{/*
-		    console.log(data);
-		    var welcome = $('<p class="message" name='+user+'>Welcome, '+user+'</p>');
-		    $('.loginbox').empty().append(welcome).append($('<button id="logout">logout</button>')); 
-
-		    buildGridList(data);
-		      */
-		    console.log(user);
-		    console.log(data);
+		}else{
 		    buildLoggedInView(user, data);
+		    startTimer();
+
 		}
 	    }
 	})
     });
+
+    var idleTimer;
+    function startTimer(){
+	console.log('click');
+	if($('.loginbox input').length == 0){
+	    if(idleTimer) window.clearTimeout(idleTimer);
+	    idleTimer = window.setTimeout(function(){
+		$('#logout').trigger('click');
+		alert('You have been logged out due to inactivity');
+	    }, 1000*60*10);
+	}
+    }
+    $(document).on('click',function(){
+	startTimer()
     
+    });
+
     $(document).on('click' , '#logout' , function(){
 	buildLoggedOutView();
 	$.ajax({
@@ -763,10 +706,6 @@ $(document).ready(function(){
 		    $('.loginbox').append($('<p class="message">try another name</p>'));
 		}else{
 		    buildLoggedInView(user);
-		    //var welcome = $('<p class="message" name='+data.user+'>Welcome, '+data.user+'</p>'); 
-		    //$('.loginbox').empty().append(welcome).append($('<button id="logout">logout</button>'));
-		    //$('.message').css('float' , 'left');
-		    
 		}
 	    }
 	});
@@ -776,8 +715,6 @@ $(document).ready(function(){
 
 
     $('#save').click(function(e){
-	console.log($('.message').attr('name'));
-	console.log($('canvas').length);
 	if( $('.message').attr('name') != undefined && $('canvas').length > 0){
 
 	    var nameOfDesign = $('#savename').val();	    	    
@@ -935,21 +872,18 @@ function buildGridList(gridsArray){
 }
 
     $('#can').click(function(){
-	 html2canvas(document.getElementById('boxwrapper'), {
-
-	    onrendered: function(canvas) {
-		
-		$('#thumb').children().detach();
-		$('#thumb').append($(canvas));
-		$('canvas').css('display','none');
-		var canvas =$('canvas')[0];
-		var img    = canvas.toDataURL("image/png");
-		$('#thumb').append($('<img src="'+img+'"/>'));
-
-	    }
-
-	 });
+	var canvas = $('canvas')[0];
+	
+	$('#thumb').children().detach();
+	//$('#thumb').append($(canvas));
+	//$('canvas').css('display','none');
+	//var canvas =$('canvas')[0];
+	var img    = canvas.toDataURL("image/png");
+	console.log(img);
+	$('#thumb').append($('<img src="'+img+'"/>'));
+	
     });
+
     
     
     $('.colorBox, #colorBack, #colorBorder').on('change keydown mouseup mousedown keyup click blur' ,  function(){
@@ -1066,7 +1000,73 @@ function buildGridList(gridsArray){
 	fillWithRandomColors()
 
     });
-    $('#clear').trigger('click');
+
+    $('.adminShowGrids').on('click' , function(){
+	var userName = $(this).parent().attr('name');
+	$(this).next('.adminGridList').slideToggle();
+	$(this).next('.adminGridList').children('li').each(function(index,grid){
+	    var gridName = $(grid).attr('name');
+	    if($(grid).children('img').length == 0){
+		$(grid).append($('<img src="images/'+userName+'_'+gridName+'_th.png"></img>'));
+	    }
+	});
+    });
+
+    $('.adminUsername').on('keyup', function(){
+	var $this = $(this);
+	if(typeof adminInputTimer == 'number'){
+	    window.clearTimeout(adminInputTimer);
+	    delete adminInputTimer;
+	}
+	
+	adminInputTimer = window.setTimeout(function(){
+	    var dat ={};
+	    dat.type = 'usernameUpdate';
+	    dat.user = $this.parent().attr('name');
+	    dat.newUser = $this.val();
+	    $.ajax({
+		type:'post',
+		url:'/adminUpdate',
+		contentType:'application/json',
+		data:JSON.stringify(dat),
+		beforeSend:function(){
+		    console.log('sending name update for ' + $this.attr('name'));
+		},
+		success:function(data){
+		    console.log(data);
+		    $this.parent().attr('name' , dat.newUser);
+		}
+	    })
+	},3000)
+    })
+
+    $('.adminDeleteUser').on('click',function(){
+	if(typeof adminInputTimer == 'number'){
+	    window.clearTimeout(adminInputTimer);
+	    delete adminInputTimer;
+	}
+	var $this = $(this);
+	var user = $this.parent().attr('name');
+	console.log(user);
+	if( confirm('are you sure you want to permanately delete user ' + user+'?') ){
+	    $.ajax({
+		type:'post',
+		url:'adminUpdate',
+		contentType:'application/json',
+		data:JSON.stringify({'user':user,'type':'deleteUser'}),
+		beforeSend:function(){
+		    console.log('sending delete for user '+user);
+		},
+		success:function(data){
+		    console.log(data);
+		    $this.parent().remove();
+		}
+	    })
+	}
+    })
+
+
+
 });
 
 
@@ -1094,3 +1094,4 @@ var CanvasGrid;
 var CanvasSquare;
 var test;
  
+var Square;

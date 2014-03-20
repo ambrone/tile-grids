@@ -47,6 +47,8 @@ var userModel =  mongoose.model('users' , userSchema);
 
 app.get('/' , routes.index(userModel));
 
+app.get('/admin' , routes.admin(userModel,bcrypt));
+
 app.post('/login' , routes.login(userModel,bcrypt));
 
 app.post('/addUser' , routes.addUser(userModel,bcrypt));
@@ -88,10 +90,12 @@ app.post('/delete' , routes.delete(fs,userModel));
 
 app.post('/logout', routes.logout());
 
+app.post('/adminUpdate' , routes.adminUpdate(userModel));
+
 var options = {
     key:fs.readFileSync('./tiles.key'),
     cert:fs.readFileSync('./tiles.crt')
 }
 //app.listen(3000);
 https.createServer(options, app).listen(443);
-console.log('listening on 3 thousand');
+console.log('listening on 443');

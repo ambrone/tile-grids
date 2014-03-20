@@ -126,6 +126,7 @@ exports.update = function(userModel){
 exports.delete = function(fs,userModel){
     return function(req,res){
 	console.log('post to /delete');
+	console.log(req.body);
 	var g = userModel.findOne({'user':req.body.user},function(err,docs){
 	    var match;
 	    docs.grids.forEach(function(grid,index){
@@ -162,4 +163,33 @@ function removeLetters(letter,str){
     }else{
 	return str[0] + removeLetters(letter,str.slice(1));
     }    
+}
+
+exports.admin = function(userModel,bcrypt){
+    return function(req,res){
+	userModel.find({},{'gridNames':1,'user':1},function(err,docs){    
+	    res.render('admin', {users : docs});
+	});
+    }
+};
+
+exports.adminUpdate = function(userModel){
+    return function (req,res){
+	console.log(req.body);
+	if(req.body.type == 'usernameUpdate'){
+	    userModel.findOne({user:req.body.user}, function(err,docs){
+		if(err) console.log(err);
+		docs.user = req.body.newUser;
+		docs.save(function(err){console.log(err);});
+		res.send('user '+req.body.user+' is now ' + req.body.newUser);
+	    })
+	}else if(req.body.type == 'deleteUser'){
+	    userModel.findOne({user:req.body.user}).remove(function(err,docs){
+		console.log(docs);
+		if(err)console.log(err);
+		res.send('user '+req.body.user+' deleted');
+	    })
+	}
+		
+    }
 }
