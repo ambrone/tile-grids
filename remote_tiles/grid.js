@@ -86,7 +86,7 @@ $(document).ready(function(){
 	    var canvas = $canvas[0];
 	    canvas.height = this.side+1;
 	    canvas.width = this.side+1;
-	    console.log('drawing...');
+	    //console.log('drawing...');
 	    if (canvas.getContext) {
 		var ctx = canvas.getContext('2d');
 		ctx.fillStyle = this.border;
@@ -102,7 +102,7 @@ $(document).ready(function(){
 			this.squares[colorCount].pos.y=i;
 			colorCount +=1;
 			if(colorCount == this.squares.length){
-			    console.log('build time: '+((Date.now()-now)/1000).toString() + ' seconds' );
+			    //console.log('build time: '+((Date.now()-now)/1000).toString() + ' seconds' );
 			    return;
 			}
 		    }
@@ -328,11 +328,11 @@ $(document).ready(function(){
 	
 	else if(id=='colorBorder' || id=='colorBack' || id=='color1' || id=='color2' || id == 'color3'){
 	    if(e.which == 38 || e.which == 40){
-		console.log(e.which);
+		//console.log(e.which);
 		var value = $this.val();
-		console.log(value);
+		//console.log(value);
 		value = parseInt(value.slice(1),16);
-		console.log(value);
+		//console.log(value);
 		if(value != value){return;}
 		if(e.which == 38){
 		    value += 100;
@@ -341,7 +341,7 @@ $(document).ready(function(){
 		    value -=100;
 		}
 		value = '#' + value.toString(16);
-		console.log(value);
+		//console.log(value);
 		$this.val(value);
 		changeColors([ $('#color1').val(), $('#color2').val(), $('#color3').val()]);
 	    }
@@ -440,7 +440,7 @@ $(document).ready(function(){
     
     $('#rebuild').on('click', function(){
 	var newSide = parseInt( $('#size').val() );
-	console.log(newSide);
+	//console.log(newSide);
 	if (newSide == '' || isNaN(newSide)){
 	    flashRed($('#size'));
 	}
@@ -501,7 +501,7 @@ $(document).ready(function(){
 //	    ctx.fillStyle = simpleArray.background;
 //	    ctx.fillRect(0,0,simpleArray.side+12,simpleArray.side+12);
 	    var squaresPerSide = simpleArray.side / 12;
-	    console.log('squaresPerSide: '+squaresPerSide);
+	    //console.log('squaresPerSide: '+squaresPerSide);
 	    var colorCount = 0
 	    for(i=0;i<=squaresPerSide*11;i+=11){
 		for(j=0;j<squaresPerSide*12-12;j+=12){
@@ -510,8 +510,8 @@ $(document).ready(function(){
 		    colorCount +=1;
 		}
 	    }
-	    console.log('colorCount: ' + colorCount);
-//	    console.log('simpleArray.squares.length: '+simpleArray.squares.length);
+	    //console.log('colorCount: ' + colorCount);
+//	    //console.log('simpleArray.squares.length: '+simpleArray.squares.length);
 	
 	}
 	
@@ -525,13 +525,13 @@ $(document).ready(function(){
 	cg.colors = s.colors;
 	cg.probs = s.probs;
 	var len = cg.squares.length-1;
-	console.log(simpleArray);
+	//console.log(simpleArray);
 	for(var i=0;i<=len;i++){
 	    cg.squares[i].change(s.squares[i][0], s.squares[0][1], false);
 //	    cg.squares[i].iteration = s.squares[i][1];
 //	    cg.squares[i].isBackground = s.squares[i][2];
 	}
-	console.log('cg.squares.length: ' + cg.squares.length);
+	//console.log('cg.squares.length: ' + cg.squares.length);
 
     }
 
@@ -561,7 +561,7 @@ $(document).ready(function(){
 
 	//add list of grids
 	var gridList = $('#savedList');
-	console.log(gridList.length);
+	//console.log(gridList.length);
 	if(arguments.length >1){
 	    gridsArray.forEach(function(gridName,index){
 		gridList.append(buildListItem(gridName,user));
@@ -592,21 +592,21 @@ $(document).ready(function(){
 */
     saveCanvasAsImage = function(canvas){
 	var can = canvas.toDataURL('image/png');
-	console.log(can);
+	//console.log(can);
 	return can;
     }
     
     uploadThumb = function(img, name, user,update){
 	//upload image to server, server returns path of image, grid is then added to #savedList
 	var dat = {'name':name, 'img':img, 'user':user};
-	console.log('uploading '+dat);
+	//console.log('uploading '+dat);
 	$.ajax({
 	    type:'post',
 	    data:JSON.stringify(dat),
 	    contentType:'application/json',
 	    url:'/saveimg',
 	    success:function(data){
-		console.log(data);
+		//console.log(data);
 		if(update == false){
 		    var listItem = buildListItem(name,user);
 		    $('#savedList').append(listItem);
@@ -626,7 +626,7 @@ $(document).ready(function(){
 	var user = $('input[name="user"]').val();
 	var pass = $('input[name="password"]').val();
 	var remember = $('#remember').prop('checked');
-	console.log(user+pass);
+	//console.log(user+pass);
 	if(user == ''){
 	    flashRed($('input[name="user"]'));
 	    return;
@@ -656,7 +656,7 @@ $(document).ready(function(){
 
     var idleTimer;
     function startTimer(){
-	console.log('click');
+	//console.log('click');
 	if($('.loginbox input').length == 0){
 	    if(idleTimer) window.clearTimeout(idleTimer);
 	    idleTimer = window.setTimeout(function(){
@@ -676,7 +676,7 @@ $(document).ready(function(){
 	    type:'post',
 	    url:'/logout',
 	    success:function(data){
-		console.log(data +' logged out and cookie deleted');
+		//console.log(data +' logged out and cookie deleted');
 	    }
 	})
     })
@@ -701,7 +701,7 @@ $(document).ready(function(){
 		  'remember':remember
 		 },
 	    success:function(data){
-		console.log(data);
+		//console.log(data);
 		if (data == 'username taken'){
 		    $('.loginbox').append($('<p class="message">try another name</p>'));
 		}else{
@@ -718,7 +718,7 @@ $(document).ready(function(){
 	if( $('.message').attr('name') != undefined && $('canvas').length > 0){
 
 	    var nameOfDesign = $('#savename').val();	    	    
-	    console.log(nameOfDesign);
+	    //console.log(nameOfDesign);
 	    if (nameOfDesign == ''){
 		alert('name your work then press save');
 		return
@@ -736,7 +736,7 @@ $(document).ready(function(){
 	    }
       	    var testArray = makeSimpleArray(nameOfDesign, grid, $('.message').attr('name'));
 	   // testArray.user = $('.message').attr('name');
-	    console.log(testArray.user);
+	    //console.log(testArray.user);
  	    $.ajax({
 		type: 'POST',
 		data: JSON.stringify(testArray),
@@ -744,7 +744,7 @@ $(document).ready(function(){
 		url: '/save',
 		success: function(data) {
 		    uploadThumb(imageSRC,nameOfDesign, testArray.user,false);
-		    console.log(data);
+		    //console.log(data);
 		    $('#savename').val('');
 		    $('#gridName').html(nameOfDesign);
 //		    var listItem = buildListItem(nameOfDesign, testArray.user);
@@ -774,16 +774,16 @@ $(document).ready(function(){
 		$('#savename').html('');
 	    },
 	    success:function(data){
-		console.log(data);
+		//console.log(data);
 
 		var canvas = $('<canvas id="canvas" ></canvas>');
 		$('#boxwrapper').empty().append(canvas);
 		buildcg(data);
 		cg.draw($('canvas')[0]);
 		applyFieldsToPage(data);
-		console.log('load time: ');
-		console.log(Date.now() - now);
-		console.log(cg);
+		//console.log('load time: ');
+		//console.log(Date.now() - now);
+		//console.log(cg);
 
 	    }
 	});
@@ -798,10 +798,10 @@ $(document).ready(function(){
 	    contentType:'text',
 	    url:'/test',
 	    beforeSend:function(){
-		console.log('sending test...');
+		//console.log('sending test...');
 	    },
 	    success:function(data){
-		console.log(data);
+		//console.log(data);
 	    }
 	});
     });
@@ -818,14 +818,14 @@ $(document).ready(function(){
 	    contentType:'application/json',
 	    url:'/delete',
 	    beforeSend:function(){
-		console.log('sending delete for '+ dat.name+'...');
+		//console.log('sending delete for '+ dat.name+'...');
 		$this.parent().remove();
 		$('#savename').val('');
 	    },
 	    success:function(data){
-		console.log('response:');
+		//console.log('response:');
 		if (data){
-		    console.log(data);
+		    //console.log(data);
 		}
 	    }
 	});
@@ -835,7 +835,7 @@ $(document).ready(function(){
 
 	var $this = $(this);
 	var entryName = $this.siblings('#gridName').html();
-	console.log(entryName);
+	//console.log(entryName);
 	var user = $('.message').attr('name');
 	$.ajax({
 	    type:'post',
@@ -843,15 +843,15 @@ $(document).ready(function(){
 	    contentType:'application/json',
 	    url:'/update',
 	    beforeSend:function(){
-		console.log('sending update for: ' + entryName);
+		//console.log('sending update for: ' + entryName);
 	    },
 	    success:function(data){
-		console.log('successful update');
-		console.log(data);
+		//console.log('successful update');
+		//console.log(data);
 //		applyFieldsToPage(data,g.squares);
 		
 		var s = saveCanvasAsImage($('canvas')[0]);
-		console.log('s: '+s);
+		//console.log('s: '+s);
 		uploadThumb(s,entryName,user,true);
 		$('#savedList li[name="'+entryName+'"]').children('.thumbnail').detach();
 	    }
@@ -859,7 +859,7 @@ $(document).ready(function(){
     });
 
 function buildGridList(gridsArray){
-    console.log(gridsArray);
+    //console.log(gridsArray);
     gridsArray.forEach(function(gridName){
 	
 	var nameOfDesign = gridName;
@@ -879,7 +879,7 @@ function buildGridList(gridsArray){
 	//$('canvas').css('display','none');
 	//var canvas =$('canvas')[0];
 	var img    = canvas.toDataURL("image/png");
-	console.log(img);
+	//console.log(img);
 	$('#thumb').append($('<img src="'+img+'"/>'));
 	
     });
@@ -917,13 +917,13 @@ function buildGridList(gridsArray){
 	var clickedSquare = returnClickedSquare(xy.x,xy.y);
 	var canvas = $(this)[0].getContext('2d');
 
-	console.log(nabes(clickedSquare));
+	//console.log(nabes(clickedSquare));
 
 	var values = grabFieldValues();
 //	changeSquare(clickedSquare , values.color1 , 1 , canvas);
 	clickedSquare.change(values.color1 , 1, true);
 	var randArray = randomArray(values.second,values.least2);
-	console.log('1st Array: '+randArray);
+	//console.log('1st Array: '+randArray);
 	var changedNeighbors =[];
 	nabes(clickedSquare).forEach(function(neighbor,index){
 		if(randArray[index] == 1){
@@ -937,7 +937,7 @@ function buildGridList(gridsArray){
 
 	var changedNeighbors2 = []
 	randArray = randomArray(values.third, values.least3);
-	console.log('2nd array '+randArray);
+	//console.log('2nd array '+randArray);
 	changedNeighbors.forEach(function(neighbor,index){
 	    nabes(neighbor).forEach(function(nabe, index){
 		if(randArray[index] == 1){
@@ -1030,10 +1030,10 @@ function buildGridList(gridsArray){
 		contentType:'application/json',
 		data:JSON.stringify(dat),
 		beforeSend:function(){
-		    console.log('sending name update for ' + $this.attr('name'));
+		    //console.log('sending name update for ' + $this.attr('name'));
 		},
 		success:function(data){
-		    console.log(data);
+		    //console.log(data);
 		    $this.parent().attr('name' , dat.newUser);
 		}
 	    })
@@ -1051,7 +1051,7 @@ function buildGridList(gridsArray){
 	}
 	var $this = $(this);
 	var user = $this.parent().attr('name');
-	console.log(user);
+	//console.log(user);
 	window.setTimeout(function(){
 	    if( confirm('are you sure you want to permanately delete user ' + user+'?') ){
 		$.ajax({
@@ -1060,10 +1060,10 @@ function buildGridList(gridsArray){
 		    contentType:'application/json',
 		    data:JSON.stringify({'user':user,'type':'deleteUser'}),
 		    beforeSend:function(){
-			console.log('sending delete for user '+user);
+			//console.log('sending delete for user '+user);
 		    },
 		    success:function(data){
-			console.log(data);
+			//console.log(data);
 			$this.parent().remove();
 		    }
 		})
@@ -1076,14 +1076,14 @@ function buildGridList(gridsArray){
 	var user = $this.closest('.adminUser').attr('name');
 	var gridName = $this.closest('.adminGrid').attr('name');
 	
-	console.log(user + gridName);
+	//console.log(user + gridName);
 	$.ajax({
 	    type:'post',
 	    url:'/delete',
 	    contentType:'application/json',
 	    data:JSON.stringify({'user':user, 'name' : gridName}),
 	    success:function(data){
-		console.log(data);
+		//console.log(data);
 		$this.closest('.adminGrid').remove();
 	    }
 	})
