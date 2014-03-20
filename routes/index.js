@@ -26,6 +26,7 @@ exports.login = function(userModel,bcrypt){
 			console.log('req.body.remember '+req.body.remember);
 			if(req.body.remember == 'true'){
 			    req.session.user = req.body.user;
+			    req.session.cookie.maxAge = 1000*60*3;
 			    console.log('req.session.user set by exports.login');
 			}
 			//send list of names of user's grids
