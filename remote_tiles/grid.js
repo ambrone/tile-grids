@@ -669,8 +669,8 @@ $(document).ready(function(){
 	startTimer()
     
     });
-
-    $(document).on('click' , '#logout' , function(){
+    
+    function clickLogout(){
 	buildLoggedOutView();
 	$.ajax({
 	    type:'post',
@@ -679,7 +679,8 @@ $(document).ready(function(){
 		//console.log(data +' logged out and cookie deleted');
 	    }
 	})
-    })
+    }
+    $(document).on('click' , '#logout' , clickLogout);
 
     $(document).on('click','#addUser', function(){
 	var user = $('input[name="user"]').val();
