@@ -11,12 +11,12 @@ html(lang="en")
   body
     ul#adminUserList
       each user, i in users
-        li(name=user.user)
-          input(type='text' class='adminUsername' value=user.user)
+        li.adminUser(name=user.user)
+          input(type='text' value=user.user)
           button.adminDeleteUser delete
           button save
           button.adminShowGrids show grids
           ul.adminGridList
             each gridName, i in user.gridNames
               li.adminGrid(name=gridName)=gridName
-              button.adminDeleteGrid delete
+                button.adminDeleteGrid delete
