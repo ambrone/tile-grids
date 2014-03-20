@@ -1041,31 +1041,53 @@ function buildGridList(gridsArray){
     })
 
     $('.adminDeleteUser').on('click',function(){
+	var wait;
 	if(typeof adminInputTimer == 'number'){
-	    window.clearTimeout(adminInputTimer);
-	    delete adminInputTimer;
+	    //window.clearTimeout(adminInputTimer);
+	    //delete adminInputTimer;
+	    wait = 3;
+	}else{
+	    wait = .1;
 	}
 	var $this = $(this);
 	var user = $this.parent().attr('name');
 	console.log(user);
-	if( confirm('are you sure you want to permanately delete user ' + user+'?') ){
-	    $.ajax({
-		type:'post',
-		url:'adminUpdate',
-		contentType:'application/json',
-		data:JSON.stringify({'user':user,'type':'deleteUser'}),
-		beforeSend:function(){
-		    console.log('sending delete for user '+user);
-		},
-		success:function(data){
-		    console.log(data);
-		    $this.parent().remove();
-		}
-	    })
-	}
+	window.setTimeout(function(){
+	    if( confirm('are you sure you want to permanately delete user ' + user+'?') ){
+		$.ajax({
+		    type:'post',
+		    url:'/adminUpdate',
+		    contentType:'application/json',
+		    data:JSON.stringify({'user':user,'type':'deleteUser'}),
+		    beforeSend:function(){
+			console.log('sending delete for user '+user);
+		    },
+		    success:function(data){
+			console.log(data);
+			$this.parent().remove();
+		    }
+		})
+	    }
+	} , wait );
     })
 
-
+    $('.adminDeleteGrid').on('click' , function(){
+	var $this = $(this);
+	var user = $this.closest('.adminUser').attr('name');
+	var gridName = $this.closest('.adminGrid').attr('name');
+	
+	console.log(user + gridName);
+	$.ajax({
+	    type:'post',
+	    url:'/delete',
+	    contentType:'application/json',
+	    data:JSON.stringify({'user':user, 'name' : gridName}),
+	    success:function(data){
+		console.log(data);
+		$this.closest('.adminGrid').remove();
+	    }
+	})
+    });
 
 });
 
