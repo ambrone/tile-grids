@@ -9,3 +9,4 @@ remote_tiles/images/**
 **/*.*~
 **/\#*#
 node_modules/**
+**/*jquery*
