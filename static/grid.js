@@ -1,7 +1,6 @@
 $(document).ready(function(){
 
     CanvasGrid = function(side,id,border,background){
-	//Grid.call(this,side,id,border,background);
 	var s = parseInt(side);
 	while(s%11 !=0){
 	    s+=1;
@@ -20,20 +19,21 @@ $(document).ready(function(){
 	    });
 	    this.changeBorder('black');
 	}
-	this.changeBorder = function(newColor){
-	    $('.square').css('border' , '1px solid '+newColor);
-	    this.border = newColor;
-	}
+	
 	this.changeBackground = function(newColor){
 	    this.squares.forEach(function(square){
 		if(square.isBackground  == true){
-		    square.change(newColor);
+		    square.change(newColor, 0 , false);
 		}
 	    });
 	    this.background = newColor;
 	}
-
-	this.canvas = $('canvas')[0];
+	
+	this.changeBorder = function(newColor){
+	    this.border = newColor;
+	}
+	
+	//this.canvas = $('canvas')[0];
 
 	this.build = function(){
 	    var sqPerSide = this.side / 11;
@@ -74,24 +74,21 @@ $(document).ready(function(){
 	    }
 	}
 
-	this.changeBorder = function(newColor){
-	    this.border = newColor;
-	}
     };
 
-    Square = function(grid,color, width, index){
+    CanvasSquare = function(grid,color, width, index){
 	this.color = color;
 	this.width = width;
 	this.index = index;
 	this.grid = grid;
-	this.background = this.grid.background;
+//	this.background = this.grid.background;
 	this.iteration = 0;
-	this.make = function(){
-	    var $square = $('<div class="square" style="width'+this.width+'px; height:'+this.width+'px" id="'+index+'" ></div>');
-	    $square.css('background-color', this.color);
-    	    $square.css('border', 'solid 1px '+this.background);
-	    return $square;
-	};
+//	this.make = function(){
+//	    var $square = $('<div class="square" style="width'+this.width+'px; height:'+this.width+'px" id="'+index+'" ></div>');
+//	    $square.css('background-color', this.color);
+//    	    $square.css('border', 'solid 1px '+this.background);
+//	    return $square;
+//	};
 	
 	this.isBackground = true;
 
@@ -192,6 +189,73 @@ $(document).ready(function(){
 	}
     });
 
+        fill = function (grid,values){
+	grid.colors = [values.color1,values.color2,values.color3]
+	grid.probs = [values.initial, values.second, values.third]
+	
+	partialFill(partialFill(initialFill(grid.squares,values.color1, values.initial, values.colorBack), values.color2, values.second, 2, values.least2), values.color3, values.third, 3, values.least3);
+	
+	grid.changeBorder(values.colorBorder);	
+    }
+
+    initialFill = function(squares, color, prob, background){
+	var changedArray = [];
+	squares.forEach(function(square){
+	    if ( Math.random() < prob ){
+		square.change(color, 1, false);
+		changedArray.push(square);
+	    }
+	    else{
+		square.change(background , 0, false);
+		square.isBackground = true;
+	    }
+	    
+	});
+	return changedArray;
+    }
+    
+    partialFill = function(squares, color, prob, iteration, least){
+	//squares is array of square objects
+	changedArray = [];
+	var colorBack = $('#colorBack').val(); 
+	squares.forEach(function(square){
+	    randArray = randomArray(prob,least);
+	    nabes(square).forEach(function(neighbor,index){
+		if(randArray[index] == 1){
+		    if(neighbor.isBackground == true){
+			neighbor.change(color, iteration, false);
+			changedArray.push(neighbor);
+		    }
+		}
+	    });
+	});
+	return changedArray;
+    }
+    
+    function randomArray(prob, least){
+	//create a randomly sorted array of length 8 of 1's and 0's, at least 'least' of which are 1, the rest are 1's with probability 'prob' or 0's otherwise
+	var aray = [];
+	var rest = 8 - least;
+	for(var i=0;i<least;i++){
+	    aray.push(1);
+	}
+	for(var i=0;i<rest;i++){
+	    if (Math.random() < prob){
+		aray.push(1);
+	    }else{
+		aray.push(0);
+	    }
+	}
+	//shuffle aray and return it
+	var shuffled = [];
+	for(i=8;i>=1;i--){
+	    shuffled.push(aray.splice(Math.floor(i*Math.random()),1)[0])
+	};
+	return shuffled;
+    }
+    
+
+
 
     //change color without rebuilding canvas
     $('.colorBox').bind('keypress' , function(e){
@@ -205,8 +269,7 @@ $(document).ready(function(){
 	}
     });
 
-    function changeColors(newColors){
-	
+    changeColors = function(newColors){
 	cg.squares.forEach(function(square){
 	    for(var i=0 ; i<=2 ; i++){
 		if(square.iteration - 1 == i && newColors[i] != ''){
@@ -223,15 +286,20 @@ $(document).ready(function(){
 	if(e.keyCode == 13){
 	    var newColor = $('#colorBack').val();
 	    cg.changeBackground(newColor);
-	    var canvas = $('canvas')[0].getContext('2d');
+	    cg.draw();
+/*
+	    //var canvas = $('canvas')[0].getContext('2d');
 	    cg.squares.forEach(function(square){
+		console.log(square.isBackground);
 		if(square.isBackground == true){
+		    console.log('square.change(newColor , 0, true);');
 		    square.change(newColor , 0, true);
 		}
-	    })
+	    })*/
 	}
     });
-//change border without rebuilding canvas
+
+    //change border without rebuilding canvas
     $('#colorBorder').bind('keypress', function(e){
 	if(e.which == 13){
 	    cg.changeBorder($('#colorBorder').val());
@@ -305,15 +373,17 @@ $(document).ready(function(){
 	}
 	
 	function buildCanvasFromFields(){
+	    //called on 'fill' button click
 	    var values = grabFieldValues();
 	    if(values.size >= 5001) {
 		alert('thats too big');
 		return;
+	    }else{
+		cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
+		cg.build();
+		fill(cg, values);
+		cg.draw($('#cantester')[0]);
 	    }
-	    cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
-	    cg.build();
-	    fill(cg, values);
-	    cg.draw($('#cantester')[0]);
 	}
 	
 	
@@ -322,71 +392,6 @@ $(document).ready(function(){
 	});
 
 //311b6955
-    fill = function (grid,values){
-	grid.colors = [values.color1,values.color2,values.color3]
-	grid.probs = [values.initial, values.second, values.third]
-	
-	partialFill(partialFill(initialFill(grid.squares,values.color1, values.initial, values.colorBack), values.color2, values.second, 2, values.least2), values.color3, values.third, 3, values.least3);
-	
-	grid.changeBorder(values.colorBorder);	
-    }
-
-    initialFill = function(squares, color, prob, background){
-	var changedArray = [];
-	squares.forEach(function(square){
-	    if ( Math.random() < prob ){
-		square.change(color, 1, false);
-		changedArray.push(square);
-	    }
-	    else{
-		square.change(background , 0, false);
-		square.isBackground = true;
-	    }
-	    
-	});
-	return changedArray;
-    }
-    
-    partialFill = function(squares, color, prob, iteration, least){
-	//squares is array of square objects
-	changedArray = [];
-	var colorBack = $('#colorBack').val(); 
-	squares.forEach(function(square){
-	    randArray = randomArray(prob,least);
-	    nabes(square).forEach(function(neighbor,index){
-		if(randArray[index] == 1){
-		    if(neighbor.isBackground == true){
-			neighbor.change(color, iteration, false);
-			changedArray.push(neighbor);
-		    }
-		}
-	    });
-	});
-	return changedArray;
-    }
-    
-    function randomArray(prob, least){
-	//create a randomly sorted array of length 8 of 1's and 0's, at least 'least' of which are 1, the rest are 1's with probability 'prob' or 0's otherwise
-	var aray = [];
-	var rest = 8 - least;
-	for(var i=0;i<least;i++){
-	    aray.push(1);
-	}
-	for(var i=0;i<rest;i++){
-	    if (Math.random() < prob){
-		aray.push(1);
-	    }else{
-		aray.push(0);
-	    }
-	}
-	//shuffle aray and return it
-	var shuffled = [];
-	for(i=8;i>=1;i--){
-	    shuffled.push(aray.splice(Math.floor(i*Math.random()),1)[0])
-	};
-	return shuffled;
-    }
-    
     $('#rebuild').on('click', function(){
 	var newSide = parseInt( $('#size').val() );
 	//console.log(newSide);
@@ -1065,5 +1070,5 @@ var createCanvasFromArray;
 var CanvasGrid;
 var CanvasSquare;
 var test;
- 
+var changeColors; 
 var Square;
