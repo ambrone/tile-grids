@@ -140,7 +140,7 @@ exports.delete = function(fs,userModel){
 	    docs.grids.splice(match,1);
 	    docs.gridNames.splice(docs.gridNames.indexOf(req.body.name),1);
 	    docs.save(function(){});
-	    var imageFile = './remote_tiles/images/'+req.body.user +'_'+req.body.name+'.png';
+	    var imageFile = './static/images/'+req.body.user +'_'+req.body.name+'.png';
 	    fs.unlink(imageFile);
 	    res.send(req.body.name +' deleted');
 
@@ -183,6 +183,7 @@ exports.adminUpdate = function(userModel){
 		docs.user = req.body.newUser;
 		docs.save(function(err){console.log(err);});
 		res.send('user '+req.body.user+' is now ' + req.body.newUser);
+		console.log('user '+req.body.user+' is now ' + req.body.newUser);
 	    })
 	}else if(req.body.type == 'deleteUser'){
 	    userModel.findOne({user:req.body.user}).remove(function(err,docs){

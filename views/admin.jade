@@ -12,7 +12,7 @@ html(lang="en")
     ul#adminUserList
       each user, i in users
         li.adminUser(name=user.user)
-          input(type='text' value=user.user)
+          input.adminUsername(type='text' value=user.user)
           button.adminDeleteUser delete
           button save
           button.adminShowGrids show grids

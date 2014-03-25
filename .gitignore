@@ -2,11 +2,12 @@ tiles.crt
 tiles.csr
 tiles.key
 tile.key.org
-remote_tiles/html2canvas.js
-remote_tiles/underscore.js
-remote_tiles/bootstrap.min.css
-remote_tiles/images/**
+static/html2canvas.js
+static/underscore.js
+static/bootstrap.min.css
+static/images/**
 **/*.*~
 **/\#*#
 node_modules/**
 **/*jquery*
+data

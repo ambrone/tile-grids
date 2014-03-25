@@ -33,7 +33,7 @@ app.use(express.session({
 }));
 
 app.use(app.router);
-app.use(express.static('./remote_tiles'));
+app.use(express.static('./static'));
 /*
 if ('development' == app.get('env')) {
     app.use(express.errorHandler());
@@ -59,7 +59,7 @@ app.post('/save', routes.save(userModel,bcrypt));
 app.post('/saveimg',function(req,res){
     console.log('post to /saveimg '+ req.body.user + req.body.name);
     var file = req.body.img.replace(/^data:image\/png;base64,/,"");
-    var name = './remote_tiles/images/'+req.body.user+'_'+req.body.name;
+    var name = './static/images/'+req.body.user+'_'+req.body.name;
     console.log('name '+'.png'+ req.body.name);
     fs.writeFile(name+'.png', file,'base64', function (err) {
 	console.log('write error: ' + err);
