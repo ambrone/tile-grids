@@ -1,16 +1,16 @@
 $(document).ready(function(){
-
-    CanvasGrid = function(side,id,border,background){
+//need to fix up/down arrow redraw and fill click redraw inconsistentcy, have fill check for size change then rebuild if needed, otherwise just use fill()then cg.draw
+    CanvasGrid = function(side,id,border,background, squares, probs, colors){
 	var s = parseInt(side);
 	while(s%11 !=0){
 	    s+=1;
 	}
 	this.side = s;
-	this.squares = [];
-	this.probs = [];
-	this.colors = []
 	this.border = border;
 	this.background = background;
+	this.squares =squares;
+	this.probs = probs;
+	this.colors = colors;
 	this.clear = function(){
 	    this.squares.forEach(function(square){
 		square.change('white');
@@ -19,7 +19,6 @@ $(document).ready(function(){
 	    });
 	    this.changeBorder('black');
 	}
-	
 	this.changeBackground = function(newColor){
 	    this.squares.forEach(function(square){
 		if(square.isBackground  == true){
@@ -28,22 +27,29 @@ $(document).ready(function(){
 	    });
 	    this.background = newColor;
 	}
-	
 	this.changeBorder = function(newColor){
 	    this.border = newColor;
 	}
-	
-	//this.canvas = $('canvas')[0];
-
-	this.build = function(){
+	this.build = function(data){
+	    var sqs = this.squares;
 	    var sqPerSide = this.side / 11;
-	    if (this.squares.length == 0){
+	    if(arguments.length > 0){
+		console.log(data);
+		cg.name = data.name;
+		cg.colors = data.colors;
+		cg.probs = data.probs;
+		data.squares.forEach(function(square,index){
+		    var sq = new CanvasSquare(this,square[0],10,index);
+		    sqs.push(sq);
+		});
+	    }else{
 		for(var i=0;i<Math.pow(sqPerSide,2);i++){
 		    var square = new CanvasSquare(this,'white',10,i);
 		    this.squares.push(square);
 		}
 	    }
 	}
+
 	this.draw =function(){
 	    var $canvas = $('<canvas id="cantester"></canvas>');	    
 	    $('#boxwrapper').empty().append($canvas);
@@ -66,7 +72,6 @@ $(document).ready(function(){
 			this.squares[colorCount].pos.y=i;
 			colorCount +=1;
 			if(colorCount == this.squares.length){
-			    //console.log('build time: '+((Date.now()-now)/1000).toString() + ' seconds' );
 			    return;
 			}
 		    }
@@ -81,17 +86,8 @@ $(document).ready(function(){
 	this.width = width;
 	this.index = index;
 	this.grid = grid;
-//	this.background = this.grid.background;
 	this.iteration = 0;
-//	this.make = function(){
-//	    var $square = $('<div class="square" style="width'+this.width+'px; height:'+this.width+'px" id="'+index+'" ></div>');
-//	    $square.css('background-color', this.color);
-//    	    $square.css('border', 'solid 1px '+this.background);
-//	    return $square;
-//	};
-	
 	this.isBackground = true;
-
 	this.edge = function(){
 	    var edges = []
 	    var tilesPerSide = this.grid.side/11;
@@ -189,7 +185,7 @@ $(document).ready(function(){
 	}
     });
 
-        fill = function (grid,values){
+    fill = function (grid,values){
 	grid.colors = [values.color1,values.color2,values.color3]
 	grid.probs = [values.initial, values.second, values.third]
 	
@@ -197,7 +193,7 @@ $(document).ready(function(){
 	
 	grid.changeBorder(values.colorBorder);	
     }
-
+    
     initialFill = function(squares, color, prob, background){
 	var changedArray = [];
 	squares.forEach(function(square){
@@ -232,10 +228,10 @@ $(document).ready(function(){
 	return changedArray;
     }
     
-    function randomArray(prob, least){
+    randomArray = function(prob, least){
 	//create a randomly sorted array of length 8 of 1's and 0's, at least 'least' of which are 1, the rest are 1's with probability 'prob' or 0's otherwise
 	var aray = [];
-	var rest = 8 - least;
+	var rest = 8 - least || 8;
 	for(var i=0;i<least;i++){
 	    aray.push(1);
 	}
@@ -253,9 +249,6 @@ $(document).ready(function(){
 	};
 	return shuffled;
     }
-    
-
-
 
     //change color without rebuilding canvas
     $('.colorBox').bind('keypress' , function(e){
@@ -287,15 +280,6 @@ $(document).ready(function(){
 	    var newColor = $('#colorBack').val();
 	    cg.changeBackground(newColor);
 	    cg.draw();
-/*
-	    //var canvas = $('canvas')[0].getContext('2d');
-	    cg.squares.forEach(function(square){
-		console.log(square.isBackground);
-		if(square.isBackground == true){
-		    console.log('square.change(newColor , 0, true);');
-		    square.change(newColor , 0, true);
-		}
-	    })*/
 	}
     });
 
@@ -372,16 +356,17 @@ $(document).ready(function(){
 	    var timeoutID =  window.setTimeout(function(){ $element.css('background-color','white');} , 500 );
 	}
 	
-	function buildCanvasFromFields(){
+	buildCanvasFromFields = function(){
 	    //called on 'fill' button click
 	    var values = grabFieldValues();
 	    if(values.size >= 5001) {
 		alert('thats too big');
 		return;
 	    }else{
-		cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack);
+		cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack,[],[values.initial,values.second,values.third],[values.color1,values.color2,values.color3]);
 		cg.build();
 		fill(cg, values);
+		console.log(cg);
 		cg.draw($('#cantester')[0]);
 	    }
 	}
@@ -392,37 +377,19 @@ $(document).ready(function(){
 	});
 
 //311b6955
-    $('#rebuild').on('click', function(){
-	var newSide = parseInt( $('#size').val() );
-	//console.log(newSide);
-	if (newSide == '' || isNaN(newSide)){
-	    flashRed($('#size'));
-	}
-	else if(newSide != '' && !isNaN(newSide)){
-	    newSide = parseInt(newSide);
-  
-	    cg = new CanvasGrid(newSide, 'cantester','white','white');
-	    cg.build();
-	    fill(cg,grabFieldValues());
-	    cg.draw();
-	}
-    });
-
     grabFieldValues = function(){
 	//gets input values from page return as object
 	var $inputs = $('input:text');
 
 	var values = {};
 	$inputs.each(function(){
-	    values[$(this).attr('id')] = $(this).val();
+	    if($(this).attr('id')){
+		values[$(this).attr('id')] = $(this).val();
+	    }
 	});
+	console.log(values);
 	return values;
     }
-    $('#clear').on('click', function(){
-    });
-
-	
-
 	
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -439,56 +406,12 @@ $(document).ready(function(){
 	    'squares':[]
 	};
 	grid.squares.forEach(function(square,index){
-	    //	    simpleArray['squares'].push(square.color);
 	    simple['squares'].push([square.color,square.iteration,square.isBackground]);
 	    
 	});
 
 	return simple;
     }
-/*
-    createCanvasFromArray = function(simpleArray, canvas){
-	canvas.height = simpleArray.side+12;
-	canvas.width = simpleArray.side+12;
-	if (canvas.getContext) {
-	    var ctx = canvas.getContext('2d');
-//	    ctx.fillStyle = simpleArray.background;
-//	    ctx.fillRect(0,0,simpleArray.side+12,simpleArray.side+12);
-	    var squaresPerSide = simpleArray.side / 12;
-	    //console.log('squaresPerSide: '+squaresPerSide);
-	    var colorCount = 0
-	    for(i=0;i<=squaresPerSide*11;i+=11){
-		for(j=0;j<squaresPerSide*12-12;j+=12){
-		    ctx.fillStyle = simpleArray.squares[colorCount][0];
-		    ctx.fillRect(j,i,10,10);
-		    colorCount +=1;
-		}
-	    }
-	    //console.log('colorCount: ' + colorCount);
-//	    //console.log('simpleArray.squares.length: '+simpleArray.squares.length);
-	
-	}
-	
-    }
-*/
-    function buildcg(simpleArray){
-	var s = simpleArray;
-	cg = new CanvasGrid(s.side, 'cantester', s.border, s.background);
-	cg.build();
-	cg.name = s.name;
-	cg.colors = s.colors;
-	cg.probs = s.probs;
-	var len = cg.squares.length-1;
-	//console.log(simpleArray);
-	for(var i=0;i<=len;i++){
-	    cg.squares[i].change(s.squares[i][0], s.squares[0][1], false);
-//	    cg.squares[i].iteration = s.squares[i][1];
-//	    cg.squares[i].isBackground = s.squares[i][2];
-	}
-	//console.log('cg.squares.length: ' + cg.squares.length);
-
-    }
-
 
     function applyFieldsToPage(simpleArray, grid){
 	//puts grid data from saved grid into inputs on page
@@ -515,7 +438,6 @@ $(document).ready(function(){
 
 	//add list of grids
 	var gridList = $('#savedList');
-	//console.log(gridList.length);
 	if(arguments.length >1){
 	    gridsArray.forEach(function(gridName,index){
 		gridList.append(buildListItem(gridName,user));
@@ -533,17 +455,7 @@ $(document).ready(function(){
     }
 
 ////////////////////////////////////////////////////////////////CANVAS
-/*    
-    makeCanvas = function(){
-	html2canvas(document.getElementById('boxwrapper'), {
-	    onrendered:function(canvas){
-		$('#thumb').children().detach();
-		$('#thumb').append($(canvas));
-		$('canvas').css('display','none');
-	    }
-	});
-    }
-*/
+
     saveCanvasAsImage = function(canvas){
 	var can = canvas.toDataURL('image/png');
 	//console.log(can);
@@ -566,7 +478,7 @@ $(document).ready(function(){
 		    $('#savedList').append(listItem);
 		    //$('#savedList').children('li').last().children('img').attr('src' , data);  //'images/'+user+'_'+name+'_th.png');// imageSRC);
 		}else{
-		    $('#savedList li[name="'+name+'"]').prepend($('<img src="'+data+'"/>').addClass('thumbnail'));
+		    $('#savedList li[name="'+name+'"]').prepend($('<img src="images'+data+'"/>').addClass('thumbnail'));
 		}
 	    }
 	});
@@ -729,17 +641,13 @@ $(document).ready(function(){
 		$('#savename').html('');
 	    },
 	    success:function(data){
-		//console.log(data);
-
 		var canvas = $('<canvas id="canvas" ></canvas>');
 		$('#boxwrapper').empty().append(canvas);
-		buildcg(data);
+		cg = new CanvasGrid(data.side,'cantester',data.border,data.background,[],data.probs,data.colors);
+		cg.build(data);
+		console.log(cg);
 		cg.draw($('canvas')[0]);
 		applyFieldsToPage(data);
-		//console.log('load time: ');
-		//console.log(Date.now() - now);
-		//console.log(cg);
-
 	    }
 	});
     });
@@ -801,12 +709,8 @@ $(document).ready(function(){
 		//console.log('sending update for: ' + entryName);
 	    },
 	    success:function(data){
-		//console.log('successful update');
-		//console.log(data);
-//		applyFieldsToPage(data,g.squares);
 		
 		var s = saveCanvasAsImage($('canvas')[0]);
-		//console.log('s: '+s);
 		uploadThumb(s,entryName,user,true);
 		$('#savedList li[name="'+entryName+'"]').children('.thumbnail').detach();
 	    }
@@ -822,7 +726,6 @@ function buildGridList(gridsArray){
 	var listItem = buildListItem(nameOfDesign,user);
 
 	$('#savedList').append(listItem);
-//	$('#savedList').children('li').last().children('img').attr('src' , imageSRC);
     })    
 }
 
@@ -830,11 +733,7 @@ function buildGridList(gridsArray){
 	var canvas = $('canvas')[0];
 	
 	$('#thumb').children().detach();
-	//$('#thumb').append($(canvas));
-	//$('canvas').css('display','none');
-	//var canvas =$('canvas')[0];
 	var img    = canvas.toDataURL("image/png");
-	//console.log(img);
 	$('#thumb').append($('<img src="'+img+'"/>'));
 	
     });
@@ -875,7 +774,6 @@ function buildGridList(gridsArray){
 	//console.log(nabes(clickedSquare));
 
 	var values = grabFieldValues();
-//	changeSquare(clickedSquare , values.color1 , 1 , canvas);
 	clickedSquare.change(values.color1 , 1, true);
 	var randArray = randomArray(values.second,values.least2);
 	//console.log('1st Array: '+randArray);
@@ -892,12 +790,10 @@ function buildGridList(gridsArray){
 
 	var changedNeighbors2 = []
 	randArray = randomArray(values.third, values.least3);
-	//console.log('2nd array '+randArray);
 	changedNeighbors.forEach(function(neighbor,index){
 	    nabes(neighbor).forEach(function(nabe, index){
 		if(randArray[index] == 1){
 		    if(nabe.isBackground == true){
-//			changeSquare(nabe, values.color3 , 3 , canvas);
 			nabe.change(values.color3 , 3, true);
 			changedNeighbors2.push(nabe);
 		    }
@@ -1049,7 +945,6 @@ function buildGridList(gridsArray){
 
 
 
-var g;
 var cg;
 var nabes;
 var partialFill;
@@ -1057,7 +952,6 @@ var initialFill;
 var testFill;
 var makeSimpleArray;
 var testArray;
-var hat;
 var randomArray;
 var grabFieldValues;
 var Grid;
@@ -1071,4 +965,4 @@ var CanvasGrid;
 var CanvasSquare;
 var test;
 var changeColors; 
-var Square;
+var buildCanvasFromFields;
