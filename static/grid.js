@@ -482,9 +482,8 @@ $(document).ready(function(){
 		if(update == false){
 		    var listItem = buildListItem(name,user);
 		    $('#savedList').append(listItem);
-		    //$('#savedList').children('li').last().children('img').attr('src' , data);  //'images/'+user+'_'+name+'_th.png');// imageSRC);
 		}else{
-		    $('#savedList li[name="'+name+'"]').prepend($('<img src="images'+data+'"/>').addClass('thumbnail'));
+		    $('#savedList li[name="'+name+'"] img').replaceWith($('<img src="images'+data+'"/>').addClass('thumbnail'));
 		}
 	    }
 	});
@@ -700,7 +699,7 @@ $(document).ready(function(){
 		
 		var s = saveCanvasAsImage($('canvas')[0]);
 		uploadThumb(s,entryName,user,true);
-		$('#savedList li[name="'+entryName+'"]').children('.thumbnail').detach();
+//		$('#savedList li[name="'+entryName+'"]').children('.thumbnail').detach();
 	    }
 	});
     });
