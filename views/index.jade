@@ -7,36 +7,35 @@ html(lang="en")
     script(type='text/javascript' src='grid.js')
     //link(rel='stylesheet' href='ootstrap.min.css')
     link(rel='stylesheet' href='grid.css')
+    link(rel='shortcut icon' href='faviconlocalhost.png' type='image/x-icon')
     title dumb tiles
   body
     div.loginbox
       if(user!=undefined)
-        p.message(name= user) Welcome, #{user}
-        button#logout logout
+        p.message.loggedIn(name= user) Welcome, #{user}
+        button#logout.loggedIn logout
       else
-        input(type="text", name="user", placeholder='username')
-        input(type="password", name="password", placeholder='password')
-        button#login(value="login") login
-        button(id='addUser') New User?
-        label remember
-          input#remember(type='checkbox' name='remember')
+        input.loggedOut(type="text", name="user", placeholder='username')
+        input.loggedOut(type="password", name="password", placeholder='password')
+        button#login.loggedOut(value="login") login
+        button.loggedOut(id='addUser') New User?
+        label.loggedOut remember
+          input#remember.loggedOut(type='checkbox' name='remember')
     div#controlbox
       div#buttons
-        button#clear randomize
+        button#randomize randomize
         button#fillCan fill
-      //if (typeof createdUser == "undefined")
-
       div#probBox(style='clear:both')
         ul
-          li.label(style='margin-right:15px') first
+          li.label(style='margin-right:15px') prob1
           li
-            input#initial(type='text' value='.1')
-          li.label second
+            input#prob1(type='text' value='.1')
+          li.label prob2
           li
-            input#second(type='text' value='.1')
-          li.label(style='margin-right:8px') third
+            input#prob2(type='text' value='.1')
+          li.label(style='margin-right:8px') prob3
           li
-            input#third(type='text' value='.1')
+            input#prob3(type='text' value='.1')
               
       div#colorBox(style="clear:both")
           ul
@@ -72,21 +71,23 @@ html(lang="en")
           li.label size:
           li
             input#size(type='text' value='1000')
-          li.label save as:
-          li
-            input#savename(type='text')
-          li
-            button#save save
+          if(user!=undefined)
+            li.label.loggedIn save as:
+            li.loggedIn
+              input#savename(type='text')
+            li.loggedIn
+              button#save save
 
       div.clearfix
-      button#update update
+      if(user!=undefined)
+        button#update.loggedIn update
       h2#gridName
       div.clearfix
       div#boxwrapper
       ul#savedList
         if(user!=undefined)
             each grid, i in grids
-              li.recall(name=grid.name)
+              li.recall.loggedIn(name=grid.name)
                 img.thumbnail(src="images/" + grid.user + '_' + grid.name + "_th.png")
                 p=grid.name
                 button.delete delete

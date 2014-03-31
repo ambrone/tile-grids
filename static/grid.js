@@ -39,18 +39,18 @@ $(document).ready(function(){
 		cg.colors = data.colors;
 		cg.probs = data.probs;
 		data.squares.forEach(function(square,index){
-		    var sq = new CanvasSquare(this,square[0],10,index);
+		    var sq = new CanvasSquare(cg,square[0],10,index);
 		    sqs.push(sq);
 		});
 	    }else{
 		for(var i=0;i<Math.pow(sqPerSide,2);i++){
-		    var square = new CanvasSquare(this,'white',10,i);
+		    var square = new CanvasSquare(cg , 'white' , 10 , i);
 		    this.squares.push(square);
 		}
 	    }
 	}
 
-	this.draw =function(){
+	this.draw = function(){
 	    var $canvas = $('<canvas id="cantester"></canvas>');	    
 	    $('#boxwrapper').empty().append($canvas);
 	    var canvas = $canvas[0];
@@ -78,7 +78,6 @@ $(document).ready(function(){
 		}
 	    }
 	}
-
     };
 
     CanvasSquare = function(grid,color, width, index){
@@ -124,7 +123,6 @@ $(document).ready(function(){
 		canvas.fillRect(this.pos.x,this.pos.y, 10 , 10);
 	    }
 	}
-	this.make = false;
 	this.pos = {x:0,y:0};
 	
 	this.above = function(){
@@ -179,17 +177,12 @@ $(document).ready(function(){
 	return nabes;
     }
 
-    $('#initial , #second, #third').bind('keypress', function(e) {
-	if(e.keyCode==13){
-	    buildCanvasFromFields();
-	}
-    });
 
     fill = function (grid,values){
 	grid.colors = [values.color1,values.color2,values.color3]
-	grid.probs = [values.initial, values.second, values.third]
+	grid.probs = [values.prob1, values.prob2, values.prob3]
 	
-	partialFill(partialFill(initialFill(grid.squares,values.color1, values.initial, values.colorBack), values.color2, values.second, 2, values.least2), values.color3, values.third, 3, values.least3);
+	partialFill(partialFill(initialFill(grid.squares,values.color1, values.prob1, values.colorBack), values.color2, values.prob2, 2, values.least2), values.color3, values.prob3, 3, values.least3);
 	
 	grid.changeBorder(values.colorBorder);	
     }
@@ -249,6 +242,14 @@ $(document).ready(function(){
 	};
 	return shuffled;
     }
+    
+    //pressing 'enter' while focused on a probability input will rebuild grid
+    $('#prob1 , #prob2, #prob3').bind('keypress', function(e) {
+	if(e.keyCode==13){
+	    buildCanvasFromFields();
+	}
+    });
+
 
     //change color without rebuilding canvas
     $('.colorBox').bind('keypress' , function(e){
@@ -295,7 +296,7 @@ $(document).ready(function(){
 
 	var $this = $(this);
 	var id = $this.attr('id');
-	if (id=='initial' || id=='second' || id=='third'){
+	if (id=='prob1' || id=='prob2' || id=='prob3'){
 	    
 	    if (e.which == 38){	
 		var changeNumber = .1
@@ -304,7 +305,7 @@ $(document).ready(function(){
 		var changeNumber = -.1;
 	    }
 
-	    if ($this.attr('id') == 'initial'){
+	    if ($this.attr('id') == 'prob1'){
 		changeNumber = changeNumber / 10;
 	    }
 	    
@@ -363,7 +364,7 @@ $(document).ready(function(){
 		alert('thats too big');
 		return;
 	    }else{
-		cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack,[],[values.initial,values.second,values.third],[values.color1,values.color2,values.color3]);
+		cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack,[],[values.prob1,values.prob2,values.prob3],[values.color1,values.color2,values.color3]);
 		cg.build();
 		fill(cg, values);
 		console.log(cg);
@@ -443,11 +444,16 @@ $(document).ready(function(){
 		gridList.append(buildListItem(gridName,user));
 	    })
 	}
+	//add save and update buttons/inputs
+	var save = $('<li class="label loggedIn">save as:</li><li class="loggedIn"><input id="savename" type="text"/></li><li class="loggedIn"><button id="save">save</button></li>');
+	$('#sizeSave ul').append(save);
+	$('#sizeSave').append($('<button class="loggedIn" id="update">update</button>'));
     }
 
     function buildLoggedOutView(){
 	$('#savedList').empty();
 	$('.loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button><label>remember?<input type="checkbox" id="remember" name="remember"></label>'));
+	$('.loggedIn').remove();
     }
 
     function buildListItem(name,user){
@@ -581,7 +587,7 @@ $(document).ready(function(){
 
 
 
-    $('#save').click(function(e){
+    $(document).on('click', '#save', function(e){
 	if( $('.message').attr('name') != undefined && $('canvas').length > 0){
 
 	    var nameOfDesign = $('#savename').val();	    	    
@@ -652,23 +658,6 @@ $(document).ready(function(){
 	});
     });
 
-
-
-    $('#test').on('click' , function(){
-	$.ajax({
-	    type:'get',
-	    data:'test',
-	    contentType:'text',
-	    url:'/test',
-	    beforeSend:function(){
-		//console.log('sending test...');
-	    },
-	    success:function(data){
-		//console.log(data);
-	    }
-	});
-    });
-
     $(document).on('click' , '.delete' , function(){
 	var $this = $(this);
 	var entryName = $this.parents('.recall').attr('name');
@@ -695,10 +684,9 @@ $(document).ready(function(){
     });
     
     $(document).on('click','#update', function(){
-
+	console.log('updateclick');
 	var $this = $(this);
-	var entryName = $this.siblings('#gridName').html();
-	//console.log(entryName);
+	var entryName = $('#gridName').html();
 	var user = $('.message').attr('name');
 	$.ajax({
 	    type:'post',
@@ -741,7 +729,11 @@ function buildGridList(gridsArray){
     
     
     $('.colorBox, #colorBack, #colorBorder').on('change keydown mouseup mousedown keyup click blur' ,  function(){
-	var $this = $(this);
+	updateFieldColors($(this));
+    });
+    
+    updateFieldColors = function($field){
+	var $this = $field;
 	var color = $this.val();
 	$this.css('background' , color);
 	if(color == 'black'){
@@ -754,8 +746,7 @@ function buildGridList(gridsArray){
 	    color = '#' + color;
 	    $(this).val(color);
 	}
-    });
-
+    }
     $(document).on('click', 'canvas', function(e){
 	var xy = getMousePos($(this)[0],e);
 	xy.x = parseInt(xy.x);
@@ -768,6 +759,7 @@ function buildGridList(gridsArray){
 	}
 	xy.x +=1;
 	xy.y +=1;
+	
 	var clickedSquare = returnClickedSquare(xy.x,xy.y);
 	var canvas = $(this)[0].getContext('2d');
 
@@ -775,21 +767,18 @@ function buildGridList(gridsArray){
 
 	var values = grabFieldValues();
 	clickedSquare.change(values.color1 , 1, true);
-	var randArray = randomArray(values.second,values.least2);
-	//console.log('1st Array: '+randArray);
+	var randArray = randomArray(values.prob2,values.least2);
 	var changedNeighbors =[];
 	nabes(clickedSquare).forEach(function(neighbor,index){
 		if(randArray[index] == 1){
 		    if(neighbor.isBackground == true){
-//			changeSquare(neighbor, values.color2, 2, canvas);
 			neighbor.change(values.color2 , 2, true)
 			changedNeighbors.push(neighbor);
 		    }
 		}
 	});
-
 	var changedNeighbors2 = []
-	randArray = randomArray(values.third, values.least3);
+	randArray = randomArray(values.prob3, values.least3);
 	changedNeighbors.forEach(function(neighbor,index){
 	    nabes(neighbor).forEach(function(nabe, index){
 		if(randArray[index] == 1){
@@ -847,7 +836,7 @@ function buildGridList(gridsArray){
 	$('#fillCan').trigger('click');
     }
     
-    $('#clear').on('click' , function(){
+    $('#randomize').on('click' , function(){
 	fillWithRandomColors()
 
     });
@@ -940,29 +929,8 @@ function buildGridList(gridsArray){
 	})
     });
 
+    fillWithRandomColors();
+
 });
 
 
-
-
-var cg;
-var nabes;
-var partialFill;
-var initialFill;
-var testFill;
-var makeSimpleArray;
-var testArray;
-var randomArray;
-var grabFieldValues;
-var Grid;
-var makeImage;
-var img;
-var uploadThumb;
-var saveCanvasAsImage;
-var fill;
-var createCanvasFromArray;
-var CanvasGrid;
-var CanvasSquare;
-var test;
-var changeColors; 
-var buildCanvasFromFields;
