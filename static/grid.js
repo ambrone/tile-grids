@@ -14,14 +14,13 @@ $(document).ready(function(){
 	this.clear = function(){
 	    this.squares.forEach(function(square){
 		square.change('white');
-		square.isBackground = true;
 		square.iteration = 0;
 	    });
 	    this.changeBorder('black');
 	}
 	this.changeBackground = function(newColor){
 	    this.squares.forEach(function(square){
-		if(square.isBackground  == true){
+		if(square.iteration == 0){
 		    square.change(newColor, 0 , false);
 		}
 	    });
@@ -40,6 +39,7 @@ $(document).ready(function(){
 		cg.probs = data.probs;
 		data.squares.forEach(function(square,index){
 		    var sq = new CanvasSquare(cg,square[0],10,index);
+		    sq.iteration = square[1];
 		    sqs.push(sq);
 		});
 	    }else{
@@ -86,7 +86,6 @@ $(document).ready(function(){
 	this.index = index;
 	this.grid = grid;
 	this.iteration = 0;
-	this.isBackground = true;
 	this.edge = function(){
 	    var edges = []
 	    var tilesPerSide = this.grid.side/11;
@@ -112,11 +111,6 @@ $(document).ready(function(){
 	this.change = function(color, iteration, draw){
 	    this.color = color;
 	    this.iteration = iteration;
-	    if (iteration == 0) {
-		this.isBackground = true;
-	    }else{
-		this.isBackground = false;
-	    }
 	    if(draw == true){
 		var canvas = $('canvas')[0].getContext('2d');
 		canvas.fillStyle = color;
@@ -196,7 +190,6 @@ $(document).ready(function(){
 	    }
 	    else{
 		square.change(background , 0, false);
-		square.isBackground = true;
 	    }
 	    
 	});
@@ -211,7 +204,7 @@ $(document).ready(function(){
 	    randArray = randomArray(prob,least);
 	    nabes(square).forEach(function(neighbor,index){
 		if(randArray[index] == 1){
-		    if(neighbor.isBackground == true){
+		    if(neighbor.iteration == 0){
 			neighbor.change(color, iteration, false);
 			changedArray.push(neighbor);
 		    }
@@ -291,7 +284,7 @@ $(document).ready(function(){
 	    cg.draw();
 	}
     });
-//use up and down arrows to change values and redraw
+    //use up and down arrows to change values and redraw
     $('body').on('keyup', 'input', function(e) {
 
 	var $this = $(this);
@@ -407,7 +400,7 @@ $(document).ready(function(){
 	    'squares':[]
 	};
 	grid.squares.forEach(function(square,index){
-	    simple['squares'].push([square.color,square.iteration,square.isBackground]);
+	    simple['squares'].push([square.color,square.iteration]);
 	    
 	});
 
@@ -448,12 +441,14 @@ $(document).ready(function(){
 	var save = $('<li class="label loggedIn">save as:</li><li class="loggedIn"><input id="savename" type="text"/></li><li class="loggedIn"><button id="save">save</button></li>');
 	$('#sizeSave ul').append(save);
 	$('#sizeSave').append($('<button class="loggedIn" id="update">update</button>'));
+	$('<h2 id="gridName"></h2>').insertAfter('#update');
     }
 
     function buildLoggedOutView(){
 	$('#savedList').empty();
 	$('.loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button><label>remember?<input type="checkbox" id="remember" name="remember"></label>'));
 	$('.loggedIn').remove();
+	$('#gridName').remove();
     }
 
     function buildListItem(name,user){
@@ -646,6 +641,7 @@ $(document).ready(function(){
 		$('#savename').html('');
 	    },
 	    success:function(data){
+		console.log(data);
 		var canvas = $('<canvas id="canvas" ></canvas>');
 		$('#boxwrapper').empty().append(canvas);
 		cg = new CanvasGrid(data.side,'cantester',data.border,data.background,[],data.probs,data.colors);
@@ -770,7 +766,7 @@ function buildGridList(gridsArray){
 	var changedNeighbors =[];
 	nabes(clickedSquare).forEach(function(neighbor,index){
 		if(randArray[index] == 1){
-		    if(neighbor.isBackground == true){
+		    if(neighbor.iteration ==0){
 			neighbor.change(values.color2 , 2, true)
 			changedNeighbors.push(neighbor);
 		    }
@@ -781,7 +777,7 @@ function buildGridList(gridsArray){
 	changedNeighbors.forEach(function(neighbor,index){
 	    nabes(neighbor).forEach(function(nabe, index){
 		if(randArray[index] == 1){
-		    if(nabe.isBackground == true){
+		    if(nabe.iteration ==0){
 			nabe.change(values.color3 , 3, true);
 			changedNeighbors2.push(nabe);
 		    }

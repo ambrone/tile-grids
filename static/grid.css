@@ -41,7 +41,7 @@ input {
     border: solid 1px gray;
 }
 
-#initial, #second , #third , #color1, #color2, #color3, #least2, #least3, #colorBack, #colorBorder, #size {
+#prob1, #prob2 , #prob3 , #color1, #color2, #color3, #least2, #least3, #colorBack, #colorBorder, #size {
     width:65px;
     margin: 0 5px;
 }
