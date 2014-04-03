@@ -6,16 +6,25 @@
 
 }
 
-#controlbox{width: 830px; float:left;}
+#controlbox{
+    width: 430px; 
+}
 
-#buttons{width:150px;float:left;}
+#description{
+    font-size:15px;
+    width:435px;
+}
+
+#buttons{width:117px;}
 
 .loginbox input{width:100px;}
 #remember{width:20px}
 
-.loginbox{width:530px; float:left;}
+/*.loginbox{width:530px; float:left;}*/
 
-.message{float:left; margin:.3em;}
+#logout{float:left;}
+
+.message{margin:.3em;}
 
 textarea{width:100px; height:100px;}
 
@@ -65,8 +74,10 @@ input{
 #update{float:left; margin-right:20px;}
 
 #boxwrapper{
-    float:left;
-}/* position:absolute; top:0; left:0; z-index:0;}*/
+    float:right;
+    position:absolute; 
+    top:10px; left:37%; z-index:0;
+}
 
 .loading{
     width:200px;

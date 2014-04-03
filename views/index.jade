@@ -2,18 +2,16 @@ doctype html
 html(lang="en")
   head
     script(type='text/javascript' src='jquery-2.1.0.min.js')
-    //script(type='text/javascript' src='underscore.js')
-    //script(type='text/javascript' src='html2canvas.js')
     script(type='text/javascript' src='grid.js')
-    //link(rel='stylesheet' href='ootstrap.min.css')
+    link(rel='stylesheet' href='bootstrap.min.css')
     link(rel='stylesheet' href='grid.css')
     link(rel='shortcut icon' href='faviconlocalhost.png' type='image/x-icon')
     title dumb tiles
   body
     div.loginbox
       if(user!=undefined)
-        p.message.loggedIn(name= user) Welcome, #{user}
         button#logout.loggedIn logout
+        p.message.loggedIn(name= user) Welcome, #{user}
       else
         input.loggedOut(type="text", name="user", placeholder='username')
         input.loggedOut(type="password", name="password", placeholder='password')
@@ -70,28 +68,31 @@ html(lang="en")
         ul
           li.label size:
           li
-            input#size(type='text' value='1000')
+            input#size(type='text' value='700')
           if(user!=undefined)
             li.label.loggedIn save as:
             li.loggedIn
               input#savename(type='text')
             li.loggedIn
               button#save save
-
+      div.clearfix
+    div#boxwrapper
+    ul#savedList
+      if(user!=undefined)
+          each grid, i in grids
+            li.recall.loggedIn(name=grid.name)
+              img.thumbnail(src="images/" + grid.user + '_' + grid.name + "_th.png")
+              p=grid.name
+              button.delete delete
+              a(href="images/" + grid.user + '_' + grid.name + ".png" target="_blank" download='grid.png' ) download
+    div.clearfix
+    button#can save thumb
+    div#thumb
+    div#description
+      h2Tile Grid Designer - build, edit, and save square grid designs. A simple web-app I built to learn nodejs, express, jQuery, mongodb, mongoose, ssl, bcrypt, imageMagick, and Jade.
+      p The 'first', 'second', and 'third' labeled inputs set probabilities for three types of colored tiles. The first color flips each tile on a blank grid with probability 'first'. The second flips each of these tiles\' eight neighbors to the second color with probability 'second'. And the third does the same with the second group. The 'at least' box allows setting a minimum number of flipped neighbors. Background and border color can be set as well. Clicking on any tile will flip it to the first color then flip its neighbors according to current field values. While focused on any of the probability inputs, the up and down arrows will edit these numbers and redraw the grid. Pressing enter while focused on a color input will change tiles on that iteration without redrawing the whole grid. The 'randomize' button will pick three random colors and redraw the grid with the rest of the inputs as set by the user(probabilities, border, background). The save thumb button under the grid will generate an image file and print it below the grid. This can then be saved by the user.
+      p You can create a username to save grids to the server. You can then save, recall, edit, update, and delete your grids. The 'update' button updates the file as well as the thumbnail dynamically.
       div.clearfix
       if(user!=undefined)
         button#update.loggedIn update
       h2#gridName
-      div.clearfix
-      div#boxwrapper
-      ul#savedList
-        if(user!=undefined)
-            each grid, i in grids
-              li.recall.loggedIn(name=grid.name)
-                img.thumbnail(src="images/" + grid.user + '_' + grid.name + "_th.png")
-                p=grid.name
-                button.delete delete
-                a(href="images/" + grid.user + '_' + grid.name + ".png" target="_blank" download='grid.png' ) download
-      div.clearfix
-      button#can save thumb
-      div#thumb
