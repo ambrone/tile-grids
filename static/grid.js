@@ -353,15 +353,21 @@ $(document).ready(function(){
 	buildCanvasFromFields = function(){
 	    //called on 'fill' button click
 	    var values = grabFieldValues();
-	    if(values.size >= 5001) {
-		alert('thats too big');
-		return;
+	    console.log(values);
+	    if(values.error == false){
+		if(values.size >= 5001) {
+		    alert('thats too big');
+		    return;
+		}else{
+		    cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack,[],[values.prob1,values.prob2,values.prob3],[values.color1,values.color2,values.color3]);
+		    cg.build();
+		    fill(cg, values);
+		    console.log(cg);
+		    cg.draw($('#cantester')[0]);
+		}
 	    }else{
-		cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack,[],[values.prob1,values.prob2,values.prob3],[values.color1,values.color2,values.color3]);
-		cg.build();
-		fill(cg, values);
-		console.log(cg);
-		cg.draw($('#cantester')[0]);
+		alert('invalid input');
+		return
 	    }
 	}
 	
@@ -376,11 +382,25 @@ $(document).ready(function(){
 	var $inputs = $('input:text');
 
 	var values = {};
+	values.error = false;
 	$inputs.each(function(){
 	    if($(this).attr('id')){
 		values[$(this).attr('id')] = $(this).val();
 	    }
 	});
+	[values.prob1,values.prob2,values.prob3,values.size,values.least2,values.least3].forEach(function(val){
+	    if (parseFloat(val) != parseFloat(val)){
+		console.log(val);
+		val = 'error';
+		values.error = true;
+	    }
+	});
+	/*    
+	if(parseInt(values.size) != parseInt(values.size)){
+	    console.log('NaN');
+	    values.error = true;
+	}
+	*/
 	console.log(values);
 	return values;
     }
@@ -428,7 +448,7 @@ $(document).ready(function(){
     function buildLoggedInView(user,gridsArray){
 	//change login to welcome
 	var welcome = $('<p class="message" name='+user+'>Welcome, '+user+'</p>');
-	$('.loginbox').empty().append(welcome).append($('<button id="logout">logout</button>')); 
+	$('.loginbox').empty().append($('<button id="logout">logout</button>')).append(welcome); 
 
 	//add list of grids
 	var gridList = $('#savedList');
@@ -825,7 +845,9 @@ function buildGridList(gridsArray){
 	$('#colorBox input').each(function(){
 	    $(this).val(randomHex());
 	    $(this).trigger('click');
-	    $('#size').val(600);
+	    var size = $('#size');
+	    if(size.val() == '')
+		size.val(600);
 
 	});
 	$('#fillCan').trigger('click');
