@@ -6,76 +6,81 @@ html(lang="en")
     link(rel='stylesheet' href='bootstrap.min.css')
     link(rel='stylesheet' href='grid.css')
     link(rel='shortcut icon' href='faviconlocalhost.png' type='image/x-icon')
-    title dumb tiles
+    title Tile Grid Designer
   body
-    div.loginbox
-      if(user!=undefined)
-        button#logout.loggedIn logout
-        p.message.loggedIn(name= user) Welcome, #{user}
-      else
-        input.loggedOut(type="text", name="user", placeholder='username')
-        input.loggedOut(type="password", name="password", placeholder='password')
-        button#login.loggedOut(value="login") login
-        button.loggedOut(id='addUser') New User?
-        label.loggedOut remember
-          input#remember.loggedOut(type='checkbox' name='remember')
-    div#controlbox
-      div#buttons
-        button#randomize randomize
-        button#fillCan fill
-      div#probBox(style='clear:both')
-        ul
-          li.label(style='margin-right:15px') prob1
-          li
-            input#prob1(type='text' value='.1')
-          li.label prob2
-          li
-            input#prob2(type='text' value='.1')
-          li.label(style='margin-right:8px') prob3
-          li
-            input#prob3(type='text' value='.1')
-              
-      div#colorBox(style="clear:both")
+    div#topBox
+      div#loginbox
+        if(user!=undefined)
+          button#logout.loggedIn logout
+          p.message.loggedIn(name= user) Welcome, #{user}
+        else
+          input.loggedOut(type="text", name="user", placeholder='username')
+          input.loggedOut(type="password", name="password", placeholder='password')
+          button#login.loggedOut(value="login") login
+          button.loggedOut(id='addUser') New User?
+          //label.loggedOut remember
+          input#remember.loggedOut(type='checkbox' name='remember' style='width:20px')
+      div#controlbox
+        div#buttons
+          button#randomize randomize
+          button#fillCan fill
+        div#probBox(style='clear:both')
           ul
-            li.label color1
+            li.label(style='margin-right:15px') Prob.
             li
-              input#color1.colorBox(type='text' value='red')
-            li.label color2
+              input#prob1(type='text' value='.1')
+            //li.label prob2
             li
-              input#color2.colorBox(type='text' value='blue')
-            li.label color3
+              input#prob2(type='text' value='.1')
+            //li.label(style='margin-right:8px') prob3
             li
-              input#color3.colorBox(type='text' value='blue')
-      div.clearfix
-      div#leastBox
-        ul
-          li.label at Least:
-          li
-            input#least2(type='text' value='0')
-          li.label at Least:
-          li
-            input#least3(type='text' value='0')
-      div#miscBox
-        ul
-          li.label background:
-          li    
-            input#colorBack(type='text' value='white')
-          li.label border:
-          li
-            input#colorBorder(type='text' value='black')
-      div.clearfix
-      div#sizeSave
-        ul
-          li.label size:
-          li
-            input#size(type='text' value='700')
-          if(user!=undefined)
-            li.label.loggedIn save as:
-            li.loggedIn
-              input#savename(type='text')
-            li.loggedIn
-              button#save save
-      div.clearfix
+              input#prob3(type='text' value='.1')
+                
+        div#colorBox(style="clear:both")
+            ul
+              li.label Color
+              li
+                input#color1.colorBox(type='text' value='red')
+              //li.label color2
+              li
+                input#color2.colorBox(type='text' value='blue')
+              //li.label color3
+              li
+                input#color3.colorBox(type='text' value='blue')
+        div.clearfix
+        div#leastBox
+          ul
+            li.label Least
+            li
+              input#least2(type='text' value='0')
+            //li.label at Least:
+            li
+              input#least3(type='text' value='0')
+        div#miscBox
+          ul
+            li.label Background
+            li    
+              input#colorBack(type='text' value='white')
+            li.label Border
+            li
+              input#colorBorder(type='text' value='black')
+        div.clearfix
+        div#sizeSave
+          ul
+            li.label size:
+            li
+              input#size(type='text' value='700')
+            if(user!=undefined)
+              li.label.loggedIn save as:
+              li.loggedIn
+                input#savename(type='text')
+              li.loggedIn
+                button#save save
+    div#description
+      h2 Tile Grid Designer - build, edit, and save square grid designs. A simple web-app I built to learn nodejs, express, jQuery, mongodb, mongoose, ssl, bcrypt, imageMagick, and Jade.
+      p The three probability boxes (initially set to 0.1 each) set probabilities for three types of colored tiles. When the grid is drawn('fill' button is pressed) each tile could flip to the first of the three colors with the probability set by the first box. The second flips each of these tiles\' eight neighbors to the second color with the second probability. And the third does the same with the second group`s neighbors. The 'at least' box allows setting a minimum number of flipped neighbors. Background and border color can be set as well. Clicking on any tile will flip it to the first color then flip its neighbors according to current field values. While focused on any of the probability inputs, the up and down arrows will edit these numbers and redraw the grid. Pressing enter while focused on a color input will change tiles on that iteration without redrawing the whole grid. The 'randomize' button will pick three random colors and redraw the grid with the rest of the inputs as set by the user. 
+      p You can create a username to save grids to the server. You can then save, recall, edit, update, and delete your grids. The 'update' button updates the file as well as the thumbnail dynamically.
+    div.clearfix
     div#boxwrapper
     ul#savedList
       if(user!=undefined)
@@ -86,13 +91,10 @@ html(lang="en")
               button.delete delete
               a(href="images/" + grid.user + '_' + grid.name + ".png" target="_blank" download='grid.png' ) download
     div.clearfix
-    button#can save thumb
-    div#thumb
-    div#description
-      h2Tile Grid Designer - build, edit, and save square grid designs. A simple web-app I built to learn nodejs, express, jQuery, mongodb, mongoose, ssl, bcrypt, imageMagick, and Jade.
-      p The 'first', 'second', and 'third' labeled inputs set probabilities for three types of colored tiles. The first color flips each tile on a blank grid with probability 'first'. The second flips each of these tiles\' eight neighbors to the second color with probability 'second'. And the third does the same with the second group. The 'at least' box allows setting a minimum number of flipped neighbors. Background and border color can be set as well. Clicking on any tile will flip it to the first color then flip its neighbors according to current field values. While focused on any of the probability inputs, the up and down arrows will edit these numbers and redraw the grid. Pressing enter while focused on a color input will change tiles on that iteration without redrawing the whole grid. The 'randomize' button will pick three random colors and redraw the grid with the rest of the inputs as set by the user(probabilities, border, background). The save thumb button under the grid will generate an image file and print it below the grid. This can then be saved by the user.
-      p You can create a username to save grids to the server. You can then save, recall, edit, update, and delete your grids. The 'update' button updates the file as well as the thumbnail dynamically.
-      div.clearfix
+
       if(user!=undefined)
         button#update.loggedIn update
       h2#gridName
+    if(user == undefined)
+      button#can Generate Downloadable Image
+      adiv#thumb

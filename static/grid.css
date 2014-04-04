@@ -1,26 +1,24 @@
 
-#test{
-//  width:468px;
-//  height:468px;
- aborder:solid 1px black;
+#topBox{float:left}
 
-}
+#loginbox{}
+
+#loginbox input{width:100px;}
 
 #controlbox{
-    width: 430px; 
+}
+#leastBox{}
+#description{
+    font-size:12px;
+    font-family:helvetica
 }
 
-#description{
-    font-size:15px;
-    width:435px;
-}
+#colorBox{position:relative}
+
+#colorBox .label{margin-right:13px}
+#leastBox .label{margin-right:100px}
 
 #buttons{width:117px;}
-
-.loginbox input{width:100px;}
-#remember{width:20px}
-
-/*.loginbox{width:530px; float:left;}*/
 
 #logout{float:left;}
 
@@ -29,14 +27,14 @@
 textarea{width:100px; height:100px;}
 
 .hidden{display:none}
-
+/*
 .square{
     float:left;
     width:10px;
     height:10px;
     border:solid 1px black;
 }
-
+*/
 #colorBox{
     clear:both;
 }
@@ -67,16 +65,16 @@ input{
 }
 
 
-#leastBox{position:relative; left:112px}
+
 
 #gridName{margin:0 5px;}
 
 #update{float:left; margin-right:20px;}
 
 #boxwrapper{
-    float:right;
-    position:absolute; 
-    top:10px; left:37%; z-index:0;
+clear:both
+
+
 }
 
 .loading{
@@ -91,9 +89,9 @@ input{
     list-style:none;
     width:250px;
     /*height:230px;*/
-    float:right;
+
     overflow:auto;
-    position:absolute;
+
     top:5px;
     right:5px;
 

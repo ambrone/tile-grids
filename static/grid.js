@@ -395,12 +395,6 @@ $(document).ready(function(){
 		values.error = true;
 	    }
 	});
-	/*    
-	if(parseInt(values.size) != parseInt(values.size)){
-	    console.log('NaN');
-	    values.error = true;
-	}
-	*/
 	console.log(values);
 	return values;
     }
@@ -448,7 +442,7 @@ $(document).ready(function(){
     function buildLoggedInView(user,gridsArray){
 	//change login to welcome
 	var welcome = $('<p class="message" name='+user+'>Welcome, '+user+'</p>');
-	$('.loginbox').empty().append($('<button id="logout">logout</button>')).append(welcome); 
+	$('#loginbox').empty().append($('<button id="logout">logout</button>')).append(welcome); 
 
 	//add list of grids
 	var gridList = $('#savedList');
@@ -462,13 +456,16 @@ $(document).ready(function(){
 	$('#sizeSave ul').append(save);
 	$('#sizeSave').append($('<button class="loggedIn" id="update">update</button>'));
 	$('<h2 id="gridName"></h2>').insertAfter('#update');
+	$('#can').remove();
+	$('#thumb').remove();
     }
 
     function buildLoggedOutView(){
 	$('#savedList').empty();
-	$('.loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button><label>remember?<input type="checkbox" id="remember" name="remember"></label>'));
+	$('#loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button><input type="checkbox" id="remember" name="remember">'));
 	$('.loggedIn').remove();
 	$('#gridName').remove();
+	$('<button id="can">Generate Downloadable Image</button><div id="thumb"></div>').insertAfter('#boxwrapper');
     }
 
     function buildListItem(name,user){
@@ -732,7 +729,7 @@ function buildGridList(gridsArray){
     })    
 }
 
-    $('#can').click(function(){
+    $(document).on('click' , '#can' , function(){
 	var canvas = $('canvas')[0];
 	
 	$('#thumb').children().detach();
