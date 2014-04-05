@@ -584,8 +584,9 @@ $(document).ready(function(){
 		  'remember':remember
 		 },
 	    success:function(data){
-		//console.log(data);
+		console.log(data);
 		if (data == 'username taken'){
+		    $('#loginbox p.message').remove();
 		    $('#loginbox').append($('<p class="message">try another name</p>'));
 		}else{
 		    buildLoggedInView(user);
