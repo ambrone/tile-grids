@@ -97,9 +97,8 @@ input{
 #savename{width:86px}
 
 #boxwrapper{
-clear:both
-
-
+float:left;
+width:80%;
 }
 
 .loading{
@@ -114,9 +113,8 @@ clear:both
     list-style:none;
     width:250px;
     overflow:auto;
-    top:5px;
-    right:5px;
     background:aliceblue;
+    float:right;
 }
 
 
