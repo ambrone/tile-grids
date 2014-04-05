@@ -1,43 +1,62 @@
-
-#topBox{float:left}
-
-#loginbox{}
-
-#loginbox input{width:100px;}
-
-#controlbox{
-}
-#leastBox{}
-#description{
-    font-size:12px;
+body{
     font-family:helvetica
 }
 
-#colorBox{position:relative}
-
-#colorBox .label{margin-right:13px}
-#leastBox .label{margin-right:100px}
-
-#buttons{width:117px;}
-
-#logout{float:left;}
-
-.message{margin:.3em;}
-
-textarea{width:100px; height:100px;}
-
-.hidden{display:none}
-/*
-.square{
-    float:left;
-    width:10px;
-    height:10px;
-    border:solid 1px black;
+#topBox{
+    float:left; 
+    position:relative;
+    margin:10px;
+    width:400px;
 }
-*/
+
+#loginbox{height:23px;}
+
+#loginbox input{width:100px;}
+
+#logout{
+    margin-right:15px;
+    display:inline
+}
+
+.message{display:inline;}
+
+#remember{
+    position:absolute; 
+    top:-17px;
+    font-size:12px
+
+}
+#rememberCheck{
+    position:relative;
+    top:3px;
+}
+#controlbox{
+}
+
+
+#buttons{
+    width: 252px;
+    margin: 5px 0 0 -2px;
+}
+
+
+#leastBox{}
+
 #colorBox{
+    position:relative;
     clear:both;
 }
+
+#colorBox .label{margin-right:13px}
+
+#leastBox .label{margin-right:100px}
+
+.message{
+    padding-top:4px;
+    font-family:helvetica
+}
+
+.hidden{display:none}
 
 ul{
     margin:5px;
@@ -65,11 +84,17 @@ input{
 }
 
 
+#description{
+    font-size:12px;
+    font-family:helvetica
+}
 
 
 #gridName{margin:0 5px;}
 
 #update{float:left; margin-right:20px;}
+
+#savename{width:86px}
 
 #boxwrapper{
 clear:both
@@ -88,20 +113,16 @@ clear:both
 #savedList{
     list-style:none;
     width:250px;
-    /*height:230px;*/
-
     overflow:auto;
-
     top:5px;
     right:5px;
-
     background:aliceblue;
 }
 
 
 #savedList li{clear:both; }
 
-.thumbnail,#savedList p{
+.thumbnail , #savedList p{
     float:left;
     margin:5px
 }
@@ -117,15 +138,7 @@ clear:both
 
 #savedList img{width:50px;}
 
-
-#test{clear:both}
-
-.square{webkit-box-sizing: content-box; box-sizing:content-box}
-
 .clearfix{clear:both}
-
-lcanvas{border:solid 1px black}
-
 
 .adminGridList{
     display:none;

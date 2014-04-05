@@ -341,7 +341,8 @@ $(document).ready(function(){
 		changeColors([ $('#color1').val(), $('#color2').val(), $('#color3').val()]);
 	    }
 	}else if(id == 'size'){
-	    if(e.which == 13) $('#rebuild').trigger('click');
+	    if(e.which == 13) 
+		$('#fillCan').trigger('click');
 	}
     });
     
@@ -452,7 +453,7 @@ $(document).ready(function(){
 	    })
 	}
 	//add save and update buttons/inputs
-	var save = $('<li class="label loggedIn">save as:</li><li class="loggedIn"><input id="savename" type="text"/></li><li class="loggedIn"><button id="save">save</button></li>');
+	var save = $('<li class="label loggedIn">Save As:</li><li class="loggedIn"><input id="savename" type="text"/></li><li class="loggedIn"><button id="save">Save</button></li>');
 	$('#sizeSave ul').append(save);
 	$('#sizeSave').append($('<button class="loggedIn" id="update">update</button>'));
 	$('<h2 id="gridName"></h2>').insertAfter('#update');
@@ -462,7 +463,7 @@ $(document).ready(function(){
 
     function buildLoggedOutView(){
 	$('#savedList').empty();
-	$('#loginbox').empty().append($('<input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button><input type="checkbox" id="remember" name="remember">'));
+	$('#loginbox').empty().append($('<label id="remember" class="loggedOut">remember me<input type="checkbox" name="remember" style="width:20px" class="loggedOut"></label><input type="text" name="user" placeholder="username"><input type="password" name="password" placeholder="password"><button id="login" value="login">login</button><button id="addUser">New User?</button>'));
 	$('.loggedIn').remove();
 	$('#gridName').remove();
 	$('<button id="can">Generate Downloadable Image</button><div id="thumb"></div>').insertAfter('#boxwrapper');
@@ -508,7 +509,7 @@ $(document).ready(function(){
     $(document).on('click','#login', function(){
 	var user = $('input[name="user"]').val();
 	var pass = $('input[name="password"]').val();
-	var remember = $('#remember').prop('checked');
+	var remember = $('#remember input').prop('checked');
 	//console.log(user+pass);
 	if(user == ''){
 	    flashRed($('input[name="user"]'));
