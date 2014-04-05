@@ -52,8 +52,9 @@ body{
 #leastBox .label{margin-right:100px}
 
 .message{
-    padding-top:4px;
-    font-family:helvetica
+    position: absolute;
+    top: -32px;
+    right: 152px;
 }
 
 .hidden{display:none}
@@ -97,8 +98,8 @@ input{
 #savename{width:86px}
 
 #boxwrapper{
-float:left;
-width:80%;
+    float:left;
+    width:70%;
 }
 
 .loading{
