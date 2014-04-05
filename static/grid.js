@@ -56,7 +56,6 @@ $(document).ready(function(){
 	    var canvas = $canvas[0];
 	    canvas.height = this.side+1;
 	    canvas.width = this.side+1;
-	    //console.log('drawing...');
 	    if (canvas.getContext) {
 		var ctx = canvas.getContext('2d');
 		ctx.fillStyle = this.border;
@@ -525,23 +524,21 @@ $(document).ready(function(){
 	    data:{'user':user,'pass':pass,'remember':remember},
 	    success:function(data){
 		if(data =='invalid login'){
-		    if($('.loginbox p').length > 0){
-			$('.loginbox p').remove();
+		    if($('#loginbox p.message').length > 0){
+			$('#loginbox p.message').remove();
 		    }
-		    $('.loginbox').append($('<p class="message">login invalid</p>'));
+		    $('#loginbox').append($('<p class="message">Invalid Credentials</p>'));
 		}else{
 		    buildLoggedInView(user, data);
 		    startTimer();
-
 		}
 	    }
 	})
     });
-
     var idleTimer;
     function startTimer(){
 	//console.log('click');
-	if($('.loginbox input').length == 0){
+	if($('#loginbox input').length == 0){
 	    if(idleTimer) window.clearTimeout(idleTimer);
 	    idleTimer = window.setTimeout(function(){
 		$('#logout').trigger('click');
@@ -556,6 +553,7 @@ $(document).ready(function(){
     
     function clickLogout(){
 	buildLoggedOutView();
+	window.clearTimeout(idleTimer);
 	$.ajax({
 	    type:'post',
 	    url:'/logout',
@@ -588,7 +586,7 @@ $(document).ready(function(){
 	    success:function(data){
 		//console.log(data);
 		if (data == 'username taken'){
-		    $('.loginbox').append($('<p class="message">try another name</p>'));
+		    $('#loginbox').append($('<p class="message">try another name</p>'));
 		}else{
 		    buildLoggedInView(user);
 		}
