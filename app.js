@@ -1,12 +1,14 @@
 var express = require('express');
-
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
 var http = require('http');
 var https = require('https');
 var path = require('path');
 var mongo = require('mongodb');
-var mongoose = require('mongoose');
 var fs = require('fs');
-var MongoStore = require('connect-mongo')(express);
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
+var mongoose = require('mongoose');
 mongoose.connect('localhost:27017/hello');
 var routes = require('./routes');
 
@@ -19,42 +21,33 @@ module.exports = mongoose.connections[0];
 
 var app = express();
 
+
 app.set('views' , 'views');
 app.set('view engine' , 'jade');
 
-app.use(express.bodyParser({limit:'50mb'}));
-
-app.use(express.cookieParser('amber'));
-app.use(express.session({
-    store: new MongoStore({
-	secret:'amber',
-	db: mongoose.connection.db
-    })
+app.use(bodyParser.urlencoded({extended:true, limit:"5mb"}));
+app.use(bodyParser.json());
+app.use(cookieParser('amber'));
+app.use(session({
+   secret: 'amber',
+    store: new MongoStore({ mongooseConnection: mongoose.connection }),
+    resave:true,
+    saveUninitialized: true 
 }));
-
-app.use(app.router);
 app.use(express.static('./static'));
-/*
-if ('development' == app.get('env')) {
-    app.use(express.errorHandler());
-}
-*/
+
 
 var userSchema = mongoose.Schema(
-    {user:String , pass:String, session:Object, grids:Array , gridNames:Array}
+    {user:String, token:String, pass:String, session:Object, grids:Array , gridNames:Array}
 );
 var userModel =  mongoose.model('users' , userSchema);
 
 app.get('/' , routes.index(userModel));
 
 app.get('/admin' , routes.admin(userModel,bcrypt));
-
 app.post('/login' , routes.login(userModel,bcrypt));
-
 app.post('/addUser' , routes.addUser(userModel,bcrypt));
-
 app.post('/save', routes.save(userModel,bcrypt));
-
 
 app.post('/saveimg',function(req,res){
     console.log('post to /saveimg '+ req.body.user + req.body.name);
@@ -96,6 +89,9 @@ var options = {
     key:fs.readFileSync('./tiles.key'),
     cert:fs.readFileSync('./tiles.crt')
 }
-//app.listen(3000);
+
 https.createServer(options, app).listen(443);
 console.log('listening on 443');
+
+//app.listen(3000);
+//http.createServer(app).listen(8000);

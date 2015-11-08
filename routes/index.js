@@ -1,26 +1,36 @@
+logRequest = function(req) {
+	console.log("req: %j" ,req.session);
+}
+
+
 exports.index =function(userModel){
-    console.log('poop');
-    return function(req, res){
-	console.log('req.session.user '+ req.session.user);
-	if(req.session.user){
-	    userModel.findOne({user:req.session.user},function(err,docs){
-		res.render('index', {user:req.session.user,grids:docs.grids});
-	    });
-	}else{
-	    res.render('index',{});
-	}
-    };
+	return function(req, res){
+		logRequest(req);
+		if(req.session.user){
+			console.log('req.session.user == true');
+			userModel.findOne({user:req.session.user},function(err,docs){
+					res.render('index', {user:req.session.user,grids:docs.grids});
+					});
+		}else{
+			console.log("res.render('index',{});");
+			res.render('index',{});
+		}
+	};
 }
 
 
 exports.login = function(userModel,bcrypt){
     return function(req,res){
+		logRequest(req);
 	userModel.findOne({'user':req.body.user},function(err,docs){
 	    if(docs == null){
 		res.send('invalid login');
 	    }else{
 		bcrypt.compare(req.body.pass, docs.pass, function(err, response) {
 		    if(response == true){
+			var token = generateToken(req.body.user);
+			docs.token = token
+			docs.save(function(){});			
 			console.log('response == true');
 			console.log(req.body.pass +'  passes  '+docs.pass);
 			console.log('req.body.remember '+req.body.remember);
@@ -41,9 +51,26 @@ exports.login = function(userModel,bcrypt){
     }
 }
 
+generateToken = function(username) {
+	return randomString(128, "aA#!");
+}
+
+function randomString(length, chars) {
+    var mask = '';
+    if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+    if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (chars.indexOf('#') > -1) mask += '0123456789';
+    if (chars.indexOf('!') > -1) mask += '!@#$%^*()';
+    if (chars.indexOf('+') > -1) mask += '~`_+-={}[]:;<>?,./|\\';
+    var result = '';
+    for (var i = length; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
+    return result;
+}
+
+
 exports.addUser = function(userModel,bcrypt){
     return function(req,res){
-	console.log('43'+req.body.remember);
+		logRequest(req);
 	bcrypt.genSalt(10, function(err, salt) {
 	    bcrypt.hash(req.body.pass, salt, function(err, hash) {
 		// Store hash in your password B.
@@ -78,6 +105,7 @@ exports.addUser = function(userModel,bcrypt){
 
 exports.save = function(userModel , bcrypt){
     return function(req,res){
+		logRequest(req);
 	var s = userModel.findOne({'user':req.body.user} , function(err,docs){
 	    var arr = docs.grids;
 	    arr.push( req.body);
@@ -93,7 +121,7 @@ exports.save = function(userModel , bcrypt){
 
 exports.recallGrid = function(userModel){
     return function(req,res){
-	console.log('post to /recallGrid');
+		logRequest(req);
 	var g = userModel.findOne({'user':req.body.user},function(err,docs){
 	    //var grids = docs.grids;
 	    docs.grids.forEach(function(grid,index){
@@ -109,7 +137,7 @@ exports.recallGrid = function(userModel){
 
 exports.update = function(userModel){
     return function(req,res){
-	console.log('post to /update');
+		logRequest(req);
 	var g = userModel.findOne({'user':req.body.user},function(err,docs){
 	    var match;
 	    docs.grids.forEach(function(grid,index){
@@ -128,6 +156,7 @@ exports.delete = function(fs,userModel){
     return function(req,res){
 	console.log('post to /delete');
 	console.log(req.body);
+		logRequest(req);
 	var g = userModel.findOne({'user':req.body.user},function(err,docs){
 	    var match;
 	    docs.grids.forEach(function(grid,index){
@@ -150,6 +179,7 @@ exports.delete = function(fs,userModel){
 
 exports.logout = function(){
     return function(req,res){
+	logRequest(req);
 	console.log('logging out ' + req.session.user);
 	req.session.destroy(function(){
 	    res.clearCookie('connect.sid',{path:'/'});
@@ -168,6 +198,7 @@ function removeLetters(letter,str){
 
 exports.admin = function(userModel,bcrypt){
     return function(req,res){
+	logRequest(req);
 	userModel.find({},{'gridNames':1,'user':1},function(err,docs){    
 	    res.render('admin', {users : docs});
 	});
@@ -177,6 +208,7 @@ exports.admin = function(userModel,bcrypt){
 exports.adminUpdate = function(userModel){
     return function (req,res){
 	console.log(req.body);
+	logRequest(req);
 	if(req.body.type == 'usernameUpdate'){
 	    userModel.findOne({user:req.body.user}, function(err,docs){
 		if(err) console.log(err);
