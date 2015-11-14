@@ -11,3 +11,4 @@ static/images/**
 node_modules/**
 **/*jquery*
 data
+conf
