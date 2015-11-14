@@ -11,7 +11,8 @@ var MongoStore = require('connect-mongo')(session);
 var mongoose = require('mongoose');
 mongoose.connect('localhost:27017/hello');
 var routes = require('./routes');
-
+require("./conf");
+console.log(environment);
 //hat
 var db = mongoose.connection;
 var jade = require('jade');
@@ -29,16 +30,16 @@ app.use(bodyParser.urlencoded({extended:true, limit:"5mb"}));
 app.use(bodyParser.json());
 app.use(cookieParser('amber'));
 app.use(session({
-   secret: 'amber',
-    store: new MongoStore({ mongooseConnection: mongoose.connection }),
-    resave:true,
-    saveUninitialized: true 
+  secret: 'amber',
+  store: new MongoStore({ mongooseConnection: mongoose.connection }),
+  resave:true,
+  saveUninitialized: true
 }));
 app.use(express.static('./static'));
 
 
 var userSchema = mongoose.Schema(
-    {user:String, token:String, pass:String, session:Object, grids:Array , gridNames:Array}
+  {user:String, token:String, pass:String, session:Object, grids:Array , gridNames:Array}
 );
 var userModel =  mongoose.model('users' , userSchema);
 
@@ -50,29 +51,29 @@ app.post('/addUser' , routes.addUser(userModel,bcrypt));
 app.post('/save', routes.save(userModel,bcrypt));
 
 app.post('/saveimg',function(req,res){
-    console.log('post to /saveimg '+ req.body.user + req.body.name);
-    var file = req.body.img.replace(/^data:image\/png;base64,/,"");
-    var name = './static/images/'+req.body.user+'_'+req.body.name;
-    console.log('name '+'.png'+ req.body.name);
-    fs.writeFile(name+'.png', file,'base64', function (err) {
-	console.log('write error: ' + err);
-	//if image is smaller than 100x100, make thumbnail same as image, otherwise crop for thumb
-	gm(name+'.png').size(function(err,val){
-	    if(val.height <= 100 || val.width<=100){
-		name = name.slice(15);
-		gm(name+'.png').write(name+'_th.png',function(err){
-		    name = name.slice(15);
-		    res.send(name + '_th.png');
-		});
-	    }else{
-		gm(name+'.png').crop(100,100,0,0).write(name+'_th.png',function(err){
-		    console.log(err)
-		    name = name.slice(15);
-		    res.send(name+'_th.png');
-		});
-	    }
-	})
+  console.log('post to /saveimg '+ req.body.user + req.body.name);
+  var file = req.body.img.replace(/^data:image\/png;base64,/,"");
+  var name = './static/images/'+req.body.user+'_'+req.body.name;
+  console.log('name '+'.png'+ req.body.name);
+  fs.writeFile(name+'.png', file,'base64', function (err) {
+    console.log('write error: ' + err);
+    //if image is smaller than 100x100, make thumbnail same as image, otherwise crop for thumb
+    gm(name+'.png').size(function(err,val){
+      if(val.height <= 100 || val.width<=100){
+        name = name.slice(15);
+        gm(name+'.png').write(name+'_th.png',function(err){
+          name = name.slice(15);
+          res.send(name + '_th.png');
+        });
+      }else{
+        gm(name+'.png').crop(100,100,0,0).write(name+'_th.png',function(err){
+          console.log(err)
+          name = name.slice(15);
+          res.send(name+'_th.png');
+        });
+      }
     })
+  })
 })
 
 app.post('/recallGrid' , routes.recallGrid(userModel));
@@ -85,13 +86,14 @@ app.post('/logout', routes.logout());
 
 app.post('/adminUpdate' , routes.adminUpdate(userModel));
 
-var options = {
+if (environment != 'development') {
+  var options = {
     key:fs.readFileSync('./tiles.key'),
     cert:fs.readFileSync('./tiles.crt')
+  }
+  https.createServer(options, app).listen(443);
+  console.log('listening on 443');
+} else {
+  http.createServer(app).listen(8000);
+  console.log('listening on 8000');
 }
-
-https.createServer(options, app).listen(443);
-console.log('listening on 443');
-
-//app.listen(3000);
-//http.createServer(app).listen(8000);
