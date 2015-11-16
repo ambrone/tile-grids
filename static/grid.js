@@ -446,7 +446,7 @@ $(document).ready(function(){
 
     //add list of grids
     var gridList = $('#savedList');
-    if(arguments.length >1){
+    if(arguments.length > 1){
       gridsArray.forEach(function(gridName,index){
         gridList.append(buildListItem(gridName,user));
       })
@@ -533,8 +533,8 @@ $(document).ready(function(){
           $('#loginbox').append($('<p class="message">Invalid Credentials</p>'));
         }else{
           document.cookie = 'token='+data.token;
-          console.log(data.gridNames);
-          buildLoggedInView(user, data);
+          console.log(data.grid_names);
+          buildLoggedInView(user, data.grid_names);
         }
       }
     })

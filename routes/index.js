@@ -3,11 +3,36 @@ var db = new pg.Client('postgres://localhost:5432/tiles');
 var connectionString = 'postgres://localhost:5432/tiles';
 
 logRequest = function(req) {
-  console.log("req: %j" ,req.session);
+  //console.log("req.headers: %j",req.headers);
+  console.log("\nreq.url: %j", req.originalUrl);
+  console.log("req.body: %j" ,req.body);
+  console.log("req.params: %j", req.params);
+  //for (key in req){
+    //console.log(key);
+  //};
+}
+handleError = function(error, res, message, req) {
+  console.log("error: " + error);
+  res.send({message:message});
+}
+
+generateToken = function() {
+  return randomString(64, "aA#!");
+}
+randomString = function(length, chars) {
+  var mask = '';
+  if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+  if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if (chars.indexOf('#') > -1) mask += '0123456789';
+  if (chars.indexOf('!') > -1) mask += '!@#$%^*()';
+  if (chars.indexOf('+') > -1) mask += '~`_+-={}[]:;<>?,./|\\';
+  var result = '';
+  for (var i = length; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
+  return result;
 }
 
 
-exports.index =function(){
+exports.index = function(){
   return function(req, res){
     logRequest(req);
     res.render('index',{});
@@ -19,71 +44,60 @@ exports.login = function(bcrypt){
   return function(req,res){
     logRequest(req);
     pg.connect(connectionString, function(err, client, done){
-        if(err) {
-          done();
-          console.log(err);
-          return res.status(500).json({ success: false, data: err});
+      if(err) {
+        done();
+        handleError(err, res.status(500), 'db error', req);
+      }
+      var username = req.body.username;
+      var password = req.body.pass;
+
+      client.query("SELECT * FROM users WHERE username = '" + username + "';", function(err, result) {
+
+        if (err) {
+          return handleError(err, res.status(500), "db error", req);
+        }
+        if (result.rows.length == 0) {
+          return handleError('no user found for username:' + username, res.status(401), 'invalid username or password', req);
         }
 
-      var query = client.query("SELECT * FROM users WHERE username = '" + req.body.user + "';");
+        var password_hash = result.rows[0].password;
 
-      var password_hash;
-      query.on('row', function(row) {
-        password_hash = row.password;
-      });
-      query.on('end',function(){
+        bcrypt.compare(password, password_hash, function(err, result) {
+          if (err)
+            return handleError(err, res.status(500), 'server error', req);
+          if (!result) {
+            var message = "invalid username or password";
+            return handleError(message, res.status(401), message);
+          };
 
-        bcrypt.compare(req.body.pass, password_hash, function(err, response) {
-          if(response == true){
-            var token = generateToken();
-            var q = "UPDATE users SET token = '" + token + "' WHERE username = '" + req.body.user + "'";
-            var save_query = client.query(q);
-            var grid_names_query = client.query("SELECT gridname FROM grids WHERE username = '" + req.body.user + "';");
-            grid_names = [];
-            grid_names_query.on('row',function(row) {
-              grid_names.push(row.gridname);
+          var token = generateToken();
+          client.query("UPDATE users SET token = '" + token + "' WHERE username = '" +  username + "'" , function(err, result){
+            if (!result) {
+              return handleError(err, res.status(500), 'db error', req);
+            };
+            client.query("SELECT gridname FROM grids WHERE username = '" + username + "';", function(err, result){
+
+              if (err) {
+                return handleError(err, res.status(500), 'db error', req);
+              };
+              grid_names = [];
+              result.rows.forEach(function(row){
+                grid_names.push(row.gridname);
+              });
+              var response_body = {
+                grid_names : grid_names,
+                token : token
+              };
+              done();
+              res.send(response_body);
             });
-            grid_names_query.on('end',function(){
-            console.log(grid_names);
-            //send list of names of user's grids
-            //res.send(docs.gridNames);
-            //res.send(docs.grids); this one works but is slow and send all the grids at once
-           var response_body = {
-             gridNames : grid_names,
-             token : token
-           }
-           console.log("sending response: " + response_body);
-           res.send(response_body);
-            });
-          }else if(response == false){
-            res.send('invalid login');
-          }
-          done();
+          });
         });
       });
     });
-
-    //console.log(query);
-
   }
 }
 
-
-generateToken = function() {
-  return randomString(128, "aA#!");
-}
-
-function randomString(length, chars) {
-  var mask = '';
-  if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
-  if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  if (chars.indexOf('#') > -1) mask += '0123456789';
-  if (chars.indexOf('!') > -1) mask += '!@#$%^*()';
-  if (chars.indexOf('+') > -1) mask += '~`_+-={}[]:;<>?,./|\\';
-  var result = '';
-  for (var i = length; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
-  return result;
-}
 
 /*
 exports.addUser = function(userModel,bcrypt){
