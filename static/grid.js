@@ -1,4 +1,5 @@
 $(document).ready(function(){
+  console.log('cookie: ' + document.cookie);
   //need to fix up/down arrow redraw and fill click redraw inconsistentcy, have fill check for size change then rebuild if needed, otherwise just use fill()then cg.draw
   CanvasGrid = function(side,id,border,background, squares, probs, colors){
     var s = parseInt(side);
@@ -507,13 +508,23 @@ $(document).ready(function(){
   getToken = function() {
     return document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
   }
-  
+  killToken = function(reason) {
+    console.log('killing token for ' + reason);
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  }
+  setToken = function(token) {
+    var d = new Date();
+    d.setMonth(d.getMonth() + 1 > 12 ? 1 : d.getMonth() + 1);
+    console.log(d);
+    document.cookie = 'token=' + token + '; expires=' + d.toString();
+  }
+
   $(document).on('click','#login', function(){
-    var user = $('input[name="user"]').val();
+    var username = $('input[name="user"]').val();
     var pass = $('input[name="password"]').val();
     var remember = $('#remember input').prop('checked');
     //console.log(user+pass);
-    if(user == ''){
+    if(username == ''){
       flashRed($('input[name="user"]'));
       return;
     }
@@ -524,7 +535,7 @@ $(document).ready(function(){
     $.ajax({
       type:'post',
       url:'/login',
-      data:{'user':user,'pass':pass,'remember':remember},
+      data:{'username':username,'pass':pass,'remember':remember},
       success:function(data){
         if(data =='invalid login'){
           if($('#loginbox p.message').length > 0){
@@ -532,9 +543,9 @@ $(document).ready(function(){
           }
           $('#loginbox').append($('<p class="message">Invalid Credentials</p>'));
         }else{
-          document.cookie = 'token='+data.token;
           console.log(data.grid_names);
-          buildLoggedInView(user, data.grid_names);
+          setToken(data.token);
+          buildLoggedInView(username, data.grid_names);
         }
       }
     })
@@ -558,22 +569,24 @@ $(document).ready(function(){
   function clickLogout(){
     buildLoggedOutView();
     window.clearTimeout(idleTimer);
+    var token = getToken();
     $.ajax({
       type:'post',
       url:'/logout',
+      data:{token:token},
       success:function(data){
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        //console.log(data +' logged out and cookie deleted');
+        killToken('logout');
+                //console.log(data +' logged out and cookie deleted');
       }
     })
   }
   $(document).on('click' , '#logout' , clickLogout);
 
   $(document).on('click','#addUser', function(){
-    var user = $('input[name="user"]').val();
+    var username = $('input[name="user"]').val();
     var pass = $('input[name="password"]').val();
     var remember = $('#remember').prop('checked');
-    if(user == ''){
+    if(username == ''){
       flashRed($('input[name="user"]'));
       return;
     }
@@ -583,18 +596,19 @@ $(document).ready(function(){
     }
     $.ajax({
       type:'post',
-      url:'/addUser',
-      data:{'user':user,
+      url:'/user',
+      data:{'username':username,
         'pass':pass,
         'remember':remember
       },
       success:function(data){
         console.log(data);
-        if (data == 'username taken'){
+        if (data.message == 'username taken'){
           $('#loginbox p.message').remove();
           $('#loginbox').append($('<p class="message">try another name</p>'));
         }else{
-          buildLoggedInView(user);
+          document.cookie = 'token=' + data.token;
+          buildLoggedInView(username);
         }
       }
     });
@@ -948,7 +962,27 @@ $(document).ready(function(){
     })
   });
 
-  fillWithRandomColors();
+
+  (function() {
+    fillWithRandomColors();
+
+    var token = getToken();
+
+    if (token != null && token.length > 0) {
+      $.ajax({
+        type:'post',
+        url:'/user/grid_names',
+        data:{token:token},
+        success: function(data){
+            buildLoggedInView(data.username, data.grid_names);
+        },
+        error:function(jqXHR, status, error){
+          console.log("status: " + status);
+          killToken(status)
+        }
+      })
+    }
+  })();
 
 });
 

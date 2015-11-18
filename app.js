@@ -8,7 +8,6 @@ var fs = require('fs');
 var routes = require('./routes');
 require("./conf");
 var jade = require('jade');
-var bcrypt = require('bcrypt');
 var gm = require('gm').subClass({ imageMagick: true });
 //module.exports = mongoose.connections[0];
 
@@ -31,10 +30,12 @@ app.use(express.static('./static'));
 
 
 app.get('/' , routes.index());
-app.post('/login' , routes.login(bcrypt));
+app.post('/login' , routes.login());
+app.post('/user' , routes.addUser());
+app.post('/logout', routes.logout());
+app.post('/user/grid_names', routes.gridnames());
 /*
 app.get('/admin' , routes.admin(bcrypt));
-app.post('/addUser' , routes.addUser(bcrypt));
 app.post('/save', routes.save(bcrypt));
 
 app.post('/saveimg',function(req,res){
@@ -69,7 +70,6 @@ app.post('/update',routes.update());
 
 app.post('/delete' , routes.delete(fs));
 
-app.post('/logout', routes.logout());
 
 app.post('/adminUpdate' , routes.adminUpdate());
 */

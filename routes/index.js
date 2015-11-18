@@ -1,6 +1,7 @@
 var pg = require('pg');
 var db = new pg.Client('postgres://localhost:5432/tiles');
 var connectionString = 'postgres://localhost:5432/tiles';
+var bcrypt = require('bcrypt');
 
 logRequest = function(req) {
   //console.log("req.headers: %j",req.headers);
@@ -31,6 +32,13 @@ randomString = function(length, chars) {
   return result;
 }
 
+checkPasswordForGoodness = function(pw) {
+  return true;
+}
+checkUsernameForGoodness = function(username) {
+  return true;
+}
+
 
 exports.index = function(){
   return function(req, res){
@@ -38,15 +46,13 @@ exports.index = function(){
     res.render('index',{});
   };
 }
-
-
-exports.login = function(bcrypt){
+exports.login = function(){
   return function(req,res){
     logRequest(req);
     pg.connect(connectionString, function(err, client, done){
       if(err) {
         done();
-        handleError(err, res.status(500), 'db error', req);
+        return handleError(err, res.status(500), 'db error', req);
       }
       var username = req.body.username;
       var password = req.body.pass;
@@ -54,30 +60,41 @@ exports.login = function(bcrypt){
       client.query("SELECT * FROM users WHERE username = '" + username + "';", function(err, result) {
 
         if (err) {
+          done();
           return handleError(err, res.status(500), "db error", req);
         }
         if (result.rows.length == 0) {
+          done();
           return handleError('no user found for username:' + username, res.status(401), 'invalid username or password', req);
         }
 
         var password_hash = result.rows[0].password;
 
         bcrypt.compare(password, password_hash, function(err, result) {
-          if (err)
+          if (err){
+            done();
             return handleError(err, res.status(500), 'server error', req);
+          }
           if (!result) {
+            done();
             var message = "invalid username or password";
             return handleError(message, res.status(401), message);
           };
 
           var token = generateToken();
           client.query("UPDATE users SET token = '" + token + "' WHERE username = '" +  username + "'" , function(err, result){
+            if(err){
+              done();
+              return handleError(err, res.status(500), 'db error', req);
+            }
             if (!result) {
+              done();
               return handleError(err, res.status(500), 'db error', req);
             };
             client.query("SELECT gridname FROM grids WHERE username = '" + username + "';", function(err, result){
 
               if (err) {
+                done();
                 return handleError(err, res.status(500), 'db error', req);
               };
               grid_names = [];
@@ -89,6 +106,10 @@ exports.login = function(bcrypt){
                 token : token
               };
               done();
+              console.log('sending response');
+              for (item in response_body){
+                console.log(item + " : " + response_body[item]);
+              }
               res.send(response_body);
             });
           });
@@ -98,41 +119,104 @@ exports.login = function(bcrypt){
   }
 }
 
-
-/*
-exports.addUser = function(userModel,bcrypt){
+exports.logout = function(){
   return function(req,res){
     logRequest(req);
-    bcrypt.genSalt(10, function(err, salt) {
-      bcrypt.hash(req.body.pass, salt, function(err, hash) {
-        // Store hash in your password B.
-        userModel.findOne({'user':req.body.user},function(err,docs){
-          if(docs != null){
-            res.send('username taken');
-          }else{
-            console.log('req.body.pass'+req.body.pass +' '+hash);
-            var newUser = new userModel({
-              'user':req.body.user ,
-              'pass':hash,
-              'grids':[],
-              'gridNames':[]
-            });
-            console.log('req.body.remember '+req.body.remember);
-            if(req.body.remember = 'true'){
-              req.session.user = req.body.user;
-              console.log(60+req.body.remember);
+
+    var token = req.body.token;
+
+    pg.connect(connectionString, function(err, client, done) {
+      client.query("UPDATE users SET token=NULL WHERE token='" + token + "'", function(err, result) {
+        console.log('erasing token: ' + token);
+        res.send();
+
+      });
+    });
+  }
+}
+
+exports.gridnames = function() {
+
+  return function(req, res) {
+    logRequest(req);
+
+    var token = req.body.token;
+    pg.connect(connectionString, function(err, client, done) {
+      client.query("SELECT grids.gridname, grids.username FROM users, grids WHERE users.token='" + token + "'", function(err, result) {
+
+        if(err){
+          done();
+          return handleError(err,res.status(500),'db error', req);
+        }
+        if(result.rows.length == 0){
+          done();
+          return handleError('no user found with token:' + token, res.status(401), 'no grids found', req);
+        }
+
+        var gridnames = [];
+        result.rows.forEach(function(row){
+          gridnames.push(row.gridname);
+        });
+
+        res.send({username:result.rows[0].username, grid_names:gridnames});
+      });
+    });
+  }
+}
+
+exports.addUser = function() {
+  return function(req, res) {
+    logRequest(req);
+
+    pg.connect(connectionString, function(err, client, done) {
+      if (err) {
+        done();
+        return handleError(err, res.status(500), 'db error', req);
+      }
+
+      var body = req.body;
+      var username = body.username;
+      var password = body.pass;
+
+      client.query("SELECT * FROM users WHERE username = '" + username + "';", function(err, result) {
+
+        if (err) {
+          done();
+          return handleError(err, res.status(500), 'db error', req);
+        }
+        if (result.rows.length != 0) {
+          done();
+          return handleError("username taken", res.status('403'), 'username unavailable', req);
+        }
+        if (!checkUsernameForGoodness(username)) {
+          done();
+          return handleError("username is not good enough", res.status('400'), 'username is not good enough', req);
+        }
+        if (!checkPasswordForGoodness(password)) {
+          done();
+          return handleError("password is not good enough", res.status('400'), 'password is not good enough', req);
+        }
+
+        var token = generateToken();
+        bcrypt.genSalt(10, function(err, salt) {
+          bcrypt.hash(password, salt, function(err, hash) {
+
+            client.query("INSERT INTO users VALUES ('" + username + "','" + hash + "','" + token + "')", function(err, result) {
+            if (err) {
+              done();
+              return handleError(err, res.status(500), 'db error', req);
             }
-            newUser.save(function(err){console.log('saved ' + newUser.user)});
-            res.send(newUser);
-            //			console.log(newUser);
-            console.log(req.session.user);
-          }
+            done();
+            res.send({token:token});
+            });
+          });
         });
       });
     });
-
   }
 }
+
+/*
 
 
 exports.save = function(userModel , bcrypt){
@@ -209,15 +293,6 @@ exports.delete = function(fs,userModel){
   }
 }
 
-exports.logout = function(){
-  return function(req,res){
-    logRequest(req);
-    console.log('logging out ' + req.session.user);
-    req.session.destroy(function(){
-      res.clearCookie('connect.sid',{path:'/'});
-    })
-  }
-}
 
 var s = 'ryan';
 function removeLetters(letter,str){
