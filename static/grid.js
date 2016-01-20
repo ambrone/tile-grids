@@ -1,5 +1,5 @@
 $(document).ready(function(){
-  console.log('cookie: ' + document.cookie);
+  //console.log('cookie: ' + document.cookie);
   //need to fix up/down arrow redraw and fill click redraw inconsistentcy, have fill check for size change then rebuild if needed, otherwise just use fill()then cg.draw
   CanvasGrid = function(side,id,border,background, squares, probs, colors){
     var s = parseInt(side);
@@ -34,7 +34,7 @@ $(document).ready(function(){
       var sqs = this.squares;
       var sqPerSide = this.side / 11;
       if(arguments.length > 0){
-        console.log(data);
+        //console.log(data);
         cg.name = data.name;
         cg.colors = data.colors;
         cg.probs = data.probs;
@@ -354,7 +354,7 @@ $(document).ready(function(){
   buildCanvasFromFields = function(){
     //called on 'fill' button click
     var values = grabFieldValues();
-    console.log(values);
+    //console.log(values);
     if(values.error == false){
       if(values.size >= 5001) {
         alert('thats too big');
@@ -363,7 +363,7 @@ $(document).ready(function(){
         cg = new CanvasGrid(values.size, 'cantester' , values.colorBorder, values.colorBack,[],[values.prob1,values.prob2,values.prob3],[values.color1,values.color2,values.color3]);
         cg.build();
         fill(cg, values);
-        console.log(cg);
+        //console.log(cg);
         cg.draw($('#cantester')[0]);
       }
     }else{
@@ -391,12 +391,12 @@ $(document).ready(function(){
     });
     [values.prob1,values.prob2,values.prob3,values.size,values.least2,values.least3].forEach(function(val){
       if (parseFloat(val) != parseFloat(val)){
-        console.log(val);
+        //console.log(val);
         val = 'error';
         values.error = true;
       }
     });
-    console.log(values);
+    //console.log(values);
     return values;
   }
 
@@ -509,13 +509,13 @@ $(document).ready(function(){
     return document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
   }
   killToken = function(reason) {
-    console.log('killing token for ' + reason);
+    //console.log('killing token for ' + reason);
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   }
   setToken = function(token) {
     var d = new Date();
     d.setMonth(d.getMonth() + 1 > 12 ? 1 : d.getMonth() + 1);
-    console.log(d);
+    //console.log(d);
     document.cookie = 'token=' + token + '; expires=' + d.toString();
   }
 
@@ -523,7 +523,7 @@ $(document).ready(function(){
     var username = $('input[name="user"]').val();
     var pass = $('input[name="password"]').val();
     var remember = $('#remember input').prop('checked');
-    //console.log(user+pass);
+    console.log(username + ", " + pass);
     if(username == ''){
       flashRed($('input[name="user"]'));
       return;
@@ -537,6 +537,7 @@ $(document).ready(function(){
       url:'/login',
       data:{'username':username,'pass':pass,'remember':remember},
       success:function(data){
+        console.log("success");
         if(data =='invalid login'){
           if($('#loginbox p.message').length > 0){
             $('#loginbox p.message').remove();
@@ -602,7 +603,7 @@ $(document).ready(function(){
         'remember':remember
       },
       success:function(data){
-        console.log(data);
+        //console.log(data);
         if (data.message == 'username taken'){
           $('#loginbox p.message').remove();
           $('#loginbox').append($('<p class="message">try another name</p>'));
@@ -677,12 +678,14 @@ $(document).ready(function(){
         $('#savename').html('');
       },
       success:function(data){
-        console.log(data);
+        //console.log("grid data: ")
+        //console.log(data);
+        //console.log();
         var canvas = $('<canvas id="canvas" ></canvas>');
         $('#boxwrapper').empty().append(canvas);
         cg = new CanvasGrid(data.side,'cantester',data.border,data.background,[],data.probs,data.colors);
         cg.build(data);
-        console.log(cg);
+        //console.log(cg);
         cg.draw($('canvas')[0]);
         applyFieldsToPage(data);
       }
@@ -715,7 +718,7 @@ $(document).ready(function(){
   });
 
   $(document).on('click','#update', function(){
-    console.log('updateclick');
+    //console.log('updateclick');
     var $this = $(this);
     var entryName = $('#gridName').html();
     var user = $('.message').attr('name');
@@ -977,7 +980,7 @@ $(document).ready(function(){
             buildLoggedInView(data.username, data.grid_names);
         },
         error:function(jqXHR, status, error){
-          console.log("status: " + status);
+          //console.log("status: " + status);
           killToken(status)
         }
       })

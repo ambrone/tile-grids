@@ -1,6 +1,6 @@
 var pg = require('pg');
-var db = new pg.Client('postgres://localhost:5432/tiles');
-var connectionString = 'postgres://localhost:5432/tiles';
+//var db = new pg.Client('postgres://ryan@localhost:5432/tiles');
+var connectionString = 'postgres://ryan:ryan@localhost:5432/tiles';
 var bcrypt = require('bcrypt');
 
 logRequest = function(req) {
@@ -57,7 +57,9 @@ exports.login = function(){
       var username = req.body.username;
       var password = req.body.pass;
 
-      client.query("SELECT * FROM users WHERE username = '" + username + "';", function(err, result) {
+      var queryString = "SELECT * FROM users WHERE username = '" + username + "';";
+      console.log(queryString);
+      client.query(queryString, function(err, result) {
 
         if (err) {
           done();
@@ -91,7 +93,7 @@ exports.login = function(){
               done();
               return handleError(err, res.status(500), 'db error', req);
             };
-            client.query("SELECT gridname FROM grids WHERE username = '" + username + "';", function(err, result){
+            client.query("SELECT name FROM grid_data WHERE username = '" + username + "';", function(err, result){
 
               if (err) {
                 done();
@@ -99,7 +101,7 @@ exports.login = function(){
               };
               grid_names = [];
               result.rows.forEach(function(row){
-                grid_names.push(row.gridname);
+                grid_names.push(row.name);
               });
               var response_body = {
                 grid_names : grid_names,
@@ -142,7 +144,7 @@ exports.gridnames = function() {
 
     var token = req.body.token;
     pg.connect(connectionString, function(err, client, done) {
-      client.query("SELECT grids.gridname, grids.username FROM users, grids WHERE users.token='" + token + "'", function(err, result) {
+      client.query("SELECT grid_data.gridname, grid_data.username FROM users, grid_data WHERE users.token='" + token + "'", function(err, result) {
 
         if(err){
           done();
@@ -216,41 +218,101 @@ exports.addUser = function() {
   }
 }
 
-/*
+
+exports.save = function(){
+    return function(req,res){
+        logRequest(req);
+
+        //authenticate
+        var token = req.body.token;
+
+        var body = req.body;
+        var username = body.user;
+        var name = body.name;
+        var border = body.border;
+        var background = body.background;
+        var color1 = body.colors[0];
+        var color2 = body.colors[1];
+        var color3 = body.colors[2];
+        var prob1 = body.probs[0];
+        var prob2 = body.probs[1];
+        var prob3 = body.probs[2];
+        var side = body.side;
+        var squares = body.squares;
+
+        var square_data = "{";
+        squares.forEach(function(square, index){
+            square_data += square[1];
+            if (index != squares.length-1)
+                square_data += ",";
+        });
+        square_data += "}";
+
+        pg.connect(connectionString, function(err, client, done) {
+            var queryString = "INSERT INTO grid_data VALUES ('" + name + "','" + username + "','" + border + "','" + background + "','" + color1 + "','"
+                                          + color2 + "','" + color3 + "'," + prob1 + "," + prob2 +"," + prob3 + "," + side + ",'" + square_data + "')";
+            console.log(queryString)
+            client.query(queryString, function(err, result) {
+
+               if (err) {
+                 done();
+                 return handleError(err, res.status(500), 'db error', req);
+               }
+
+            })
+        });
 
 
-exports.save = function(userModel , bcrypt){
-  return function(req,res){
-    logRequest(req);
-    var s = userModel.findOne({'user':req.body.user} , function(err,docs){
-      var arr = docs.grids;
-      arr.push( req.body);
-      docs.grids = arr;
-      var names = docs.gridNames;
-      names.push(req.body.name);
-      docs.gridNames = names;
-      docs.save(function(){});
-      res.send('saved grid');
-    });
-  }
+        res.send('saved grid');
+    }
 }
+
 
 exports.recallGrid = function(userModel){
   return function(req,res){
     logRequest(req);
-    var g = userModel.findOne({'user':req.body.user},function(err,docs){
-      //var grids = docs.grids;
-      docs.grids.forEach(function(grid,index){
-        if(grid.name == req.body.name && grid.user == req.body.user){
-          res.send(grid);
-          return;
-        }
-      });
 
-    });
-  }
+        pg.connect(connectionString, function(err, client, done){
+
+            var queryString = "SELECT * FROM grid_data WHERE name='" + req.body.name + "' AND username='" + req.body.user + "'";
+            console.log(queryString);
+            client.query(queryString, function(err, result){
+               if (err) {
+                   done();
+                   return handleError(err, res.status(500), 'db error', req);
+               }
+
+                var rows = result.rows;
+                if (rows.length > 0) {
+
+                    var row = rows[0];
+                    console.log(row);
+                    var body = {};
+                    row.colors = [row.color1, row.color2, row.color3];
+                    row.probs = [row.prob1, row.prob2, row.prob3];
+
+                    var squares = [];
+                    var color_map = {
+                        0 : row.background,
+                        1 : row.color1,
+                        2 : row.color2,
+                        3 : row.color3
+                    }
+                    row.squares.forEach(function(color_number){
+                        squares.push([color_map[color_number], color_number]);
+                    });
+                    row.squares = squares;
+
+                    console.log(row);
+                    res.send(row)
+
+                }
+            })
+        });
+
+    }
 }
-
+/*
 exports.update = function(userModel){
   return function(req,res){
     logRequest(req);

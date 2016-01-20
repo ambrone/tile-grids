@@ -12,3 +12,7 @@ node_modules/**
 **/*jquery*
 data
 conf
+.idea/compiler.xml .idea/copyright .idea/encodings.xml .idea/misc.xml .idea/modules.xml .idea/vcs.xml .idea/workspace.xml
+routes/.index.js.swo
+tile-grids.iml
+.idea

@@ -34,9 +34,13 @@ app.post('/login' , routes.login());
 app.post('/user' , routes.addUser());
 app.post('/logout', routes.logout());
 app.post('/user/grid_names', routes.gridnames());
+
+app.post('/save', routes.save());
+app.post('/recallGrid' , routes.recallGrid());
+
 /*
 app.get('/admin' , routes.admin(bcrypt));
-app.post('/save', routes.save(bcrypt));
+
 
 app.post('/saveimg',function(req,res){
   console.log('post to /saveimg '+ req.body.user + req.body.name);
@@ -64,7 +68,6 @@ app.post('/saveimg',function(req,res){
   })
 })
 
-app.post('/recallGrid' , routes.recallGrid());
 
 app.post('/update',routes.update());
 
