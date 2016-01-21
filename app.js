@@ -36,6 +36,7 @@ app.post('/logout', routes.logout());
 app.post('/user/grid_names', routes.gridnames());
 
 app.post('/save', routes.save());
+app.post('/update', routes.update());
 app.post('/recallGrid' , routes.recallGrid());
 
 /*

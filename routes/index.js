@@ -31,6 +31,27 @@ randomString = function(length, chars) {
   for (var i = length; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
   return result;
 }
+authenticateToken = function(token, res, callback) {
+
+    pg.connect(connectionString, function(err, client, done){
+      if(err) {
+        done();
+        return handleError(err, res.status(500), 'db error', req);
+      }
+
+      var queryString = "SELECT username FROM users WHERE token='" + token + "';";
+
+      client.query(queryString, function(err, result) {
+
+        if (result.rows.length == 0)
+            return handleError("token invalid", res.status(401), "token invalid");
+        callback(result.rows[0].username);
+        done();
+
+      });
+
+    });
+}
 
 checkPasswordForGoodness = function(pw) {
   return true;
@@ -108,10 +129,7 @@ exports.login = function(){
                 token : token
               };
               done();
-              console.log('sending response');
-              for (item in response_body){
-                console.log(item + " : " + response_body[item]);
-              }
+
               res.send(response_body);
             });
           });
@@ -144,7 +162,7 @@ exports.gridnames = function() {
 
     var token = req.body.token;
     pg.connect(connectionString, function(err, client, done) {
-      client.query("SELECT grid_data.gridname, grid_data.username FROM users, grid_data WHERE users.token='" + token + "'", function(err, result) {
+      client.query("SELECT grid_data.name, grid_data.username FROM users, grid_data WHERE users.token='" + token + "'", function(err, result) {
 
         if(err){
           done();
@@ -157,8 +175,10 @@ exports.gridnames = function() {
 
         var gridnames = [];
         result.rows.forEach(function(row){
-          gridnames.push(row.gridname);
+          gridnames.push(row.name);
         });
+
+        console.log(gridnames);
 
         res.send({username:result.rows[0].username, grid_names:gridnames});
       });
@@ -218,53 +238,86 @@ exports.addUser = function() {
   }
 }
 
-
+exports.update = function(){
+    return saveOrUpdate(true);
+}
 exports.save = function(){
-    return function(req,res){
+    return saveOrUpdate(false);
+}
+
+saveOrUpdate = function(update){
+    return function(req, res){
         logRequest(req);
 
         //authenticate
         var token = req.body.token;
+        authenticateToken(token, res, function(username){
 
-        var body = req.body;
-        var username = body.user;
-        var name = body.name;
-        var border = body.border;
-        var background = body.background;
-        var color1 = body.colors[0];
-        var color2 = body.colors[1];
-        var color3 = body.colors[2];
-        var prob1 = body.probs[0];
-        var prob2 = body.probs[1];
-        var prob3 = body.probs[2];
-        var side = body.side;
-        var squares = body.squares;
+            var body = req.body;
+            var name = body.name;
+            if (name == '' || name == undefined)
+                return handleError("name of grid is blank", res.status(400), 'name of grid is blank', req);
+            var border = body.border;
+            var background = body.background;
+            var color1 = body.colors[0];
+            var color2 = body.colors[1];
+            var color3 = body.colors[2];
+            var prob1 = body.probs[0];
+            var prob2 = body.probs[1];
+            var prob3 = body.probs[2];
+            var side = body.side;
+            var squares = body.squares;
 
-        var square_data = "{";
-        squares.forEach(function(square, index){
-            square_data += square[1];
-            if (index != squares.length-1)
-                square_data += ",";
-        });
-        square_data += "}";
+            var square_data = "{";
+            squares.forEach(function(square, index){
+                square_data += square[1];
+                if (index != squares.length-1)
+                    square_data += ",";
+            });
+            square_data += "}";
 
-        pg.connect(connectionString, function(err, client, done) {
-            var queryString = "INSERT INTO grid_data VALUES ('" + name + "','" + username + "','" + border + "','" + background + "','" + color1 + "','"
-                                          + color2 + "','" + color3 + "'," + prob1 + "," + prob2 +"," + prob3 + "," + side + ",'" + square_data + "')";
-            console.log(queryString)
-            client.query(queryString, function(err, result) {
+            pg.connect(connectionString, function(err, client, done) {
+                console.log(update);
+                var queryString = "INSERT INTO grid_data VALUES ('" + name + "','" + username + "','" + border + "','" + background + "','" + color1 + "','"
+                                                              + color2 + "','" + color3 + "'," + prob1 + "," + prob2 +"," + prob3 + "," + side + ",'" + square_data + "')";
+                if (update) {
+                    queryStringDelete = "DELETE FROM grid_data WHERE name='" + name + "' AND username='" + username + "';"
 
-               if (err) {
-                 done();
-                 return handleError(err, res.status(500), 'db error', req);
-               }
+                    client.query(queryStringDelete, function(err, result){
+                        console.log(queryStringDelete);
+                        if (err) {
+                            done();
+                            return handleError(err, res.status(500), 'db error', req);
+                        }
+                        client.query(queryString, function(err, result){
+                            console.log(queryString);
+                            if (err) {
+                               done();
+                               return handleError(err, res.status(500), 'db error', req);
+                            }
+                        });
+                    });
+                } else {
+                    console.log(queryString);
+                    client.query(queryString, function(err, result){
+                        if (err) {
+                           done();
+                           return handleError(err, res.status(500), 'db error', req);
+                        }
+                    });
+                }
 
-            })
-        });
+            });
 
 
-        res.send('saved grid');
+            res.send('saved grid');
+        })
+
     }
+}
+
+function saveOrUpdate() {
+
 }
 
 
@@ -313,22 +366,6 @@ exports.recallGrid = function(userModel){
     }
 }
 /*
-exports.update = function(userModel){
-  return function(req,res){
-    logRequest(req);
-    var g = userModel.findOne({'user':req.body.user},function(err,docs){
-      var match;
-      docs.grids.forEach(function(grid,index){
-        if(grid.name == req.body.name){
-          match = index;
-        }
-      })
-      docs.grids.splice(match,1,req.body);
-      docs.save(function(){});
-      res.send(docs.grids[match]);
-    });
-  }
-}
 
 exports.delete = function(fs,userModel){
   return function(req,res){

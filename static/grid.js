@@ -402,10 +402,9 @@ $(document).ready(function(){
 
   ///////////////////////////////////////////////////////////////////////////////////////
 
-  makeSimpleArray = function(nameOfDesign, grid,user){
-    //builds simple grid object for sending to server, simple as in just data no methods
+  makeSimpleArray = function(nameOfDesign, grid, token){
     var simple = {
-      'user':user,
+        'token' : token,
       'name': nameOfDesign,
       'border':grid.border, 
       'background':grid.background, 
@@ -616,8 +615,6 @@ $(document).ready(function(){
   });
 
 
-
-
   $(document).on('click', '#save', function(e){
     if( $('.message').attr('name') != undefined && $('canvas').length > 0){
 
@@ -627,37 +624,70 @@ $(document).ready(function(){
         alert('name your work then press save');
         return
       }
+      saveGrid(nameOfDesign, getToken(), false);
 
-      var imageSRC = saveCanvasAsImage($('canvas')[0]);
-
-      $('.recall').each(function(){
-        if(nameOfDesign == $(this).attr('name')){
-          nameOfDesign += '1';
-        }
-      });
-      if ($('canvas').length >=1){
-        var grid = cg;
-      }
-      var testArray = makeSimpleArray(nameOfDesign, grid, $('.message').attr('name'));
-      // testArray.user = $('.message').attr('name');
-      //console.log(testArray.user);
-      $.ajax({
-        type: 'POST',
-        data: JSON.stringify(testArray),
-        contentType: 'application/json',
-        url: '/save',
-        success: function(data) {
-          uploadThumb(imageSRC,nameOfDesign, testArray.user,false);
-          //console.log(data);
-          $('#savename').val('');
-          $('#gridName').html(nameOfDesign);
-          //		    var listItem = buildListItem(nameOfDesign, testArray.user);
-          //		    $('#savedList').append(listItem);
-
-        }
-      });
     }
   });
+
+  function saveGrid(nameOfDesign, token, update) {
+
+    var imageSRC = saveCanvasAsImage($('canvas')[0]);
+
+//          $('.recall').each(function(){
+//            if(nameOfDesign == $(this).attr('name')){
+//              nameOfDesign += '1';
+//            }
+//          });
+          if ($('canvas').length >=1){
+            var grid = cg;
+          }
+          console.log(nameOfDesign);
+          var data = makeSimpleArray(nameOfDesign, grid, token);
+
+          $.ajax({
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            url: update ? '/update' : '/save',
+            success: function(data) {
+//              uploadThumb(imageSRC,nameOfDesign, testArray.user,false); TODO
+              $('#savename').val('');
+              $('#gridName').html(nameOfDesign);
+              //		    var listItem = buildListItem(nameOfDesign, testArray.user);
+              //		    $('#savedList').append(listItem);
+            },
+            error: function(error, description, exception){
+                alert(error.responseJSON.message);
+            }
+          });
+
+  }
+
+    $(document).on('click','#update', function(){
+      //console.log('updateclick');
+      var $this = $(this);
+      var entryName = $('#gridName').html();
+
+      saveGrid(entryName, getToken(), true);
+
+//      var user = $('.message').attr('name');
+//      $.ajax({
+//        type:'post',
+//        data:JSON.stringify(makeSimpleArray(entryName , cg,user)),
+//        contentType:'application/json',
+//        url:'/update',
+//        beforeSend:function(){
+//          //console.log('sending update for: ' + entryName);
+//        },
+//        success:function(data){
+//
+//          var s = saveCanvasAsImage($('canvas')[0]);
+//          uploadThumb(s,entryName,user,true);
+//          //		$('#savedList li[name="'+entryName+'"]').children('.thumbnail').detach();
+//        }
+//      });
+    });
+
 
 
   $(document).on('click', '.thumbnail', function(){
@@ -717,27 +747,7 @@ $(document).ready(function(){
     });
   });
 
-  $(document).on('click','#update', function(){
-    //console.log('updateclick');
-    var $this = $(this);
-    var entryName = $('#gridName').html();
-    var user = $('.message').attr('name');
-    $.ajax({
-      type:'post',
-      data:JSON.stringify(makeSimpleArray(entryName , cg,user)),
-      contentType:'application/json',
-      url:'/update',
-      beforeSend:function(){
-        //console.log('sending update for: ' + entryName);
-      },
-      success:function(data){
 
-        var s = saveCanvasAsImage($('canvas')[0]);
-        uploadThumb(s,entryName,user,true);
-        //		$('#savedList li[name="'+entryName+'"]').children('.thumbnail').detach();
-      }
-    });
-  });
 
   function buildGridList(gridsArray){
     //console.log(gridsArray);
