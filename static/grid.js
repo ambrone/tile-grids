@@ -693,13 +693,13 @@ $(document).ready(function(){
   $(document).on('click', '.thumbnail', function(){
     var entryName = $(this).parents('.recall').attr('name');
     var now;
-    var dat = {};
-    dat.name = entryName;
-    dat.user = $('.message').attr('name');
+    var data = {};
+    data.name = entryName;
+    data.token = getToken();
     //	var $this = $(this).clone().removeClass('thumbnail').addClass('tempImage');
     $.ajax({
       type:'post',
-      data:JSON.stringify(dat),
+      data:JSON.stringify(data),
       contentType:'application/json',
       url:'/recallGrid',
       beforeSend:function(data){
@@ -725,12 +725,12 @@ $(document).ready(function(){
   $(document).on('click' , '.delete' , function(){
     var $this = $(this);
     var entryName = $this.parents('.recall').attr('name');
-    var dat = {};
-    dat.name = entryName;
-    dat.user = $('.message').attr('name');
+    var data = {};
+    data.name = entryName;
+    data.token = getToken();
     $.ajax({
       type:'post',
-      data:JSON.stringify(dat),
+      data:JSON.stringify(data),
       contentType:'application/json',
       url:'/delete',
       beforeSend:function(){

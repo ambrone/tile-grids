@@ -17,8 +17,8 @@ var app = express();
 app.set('views' , 'views');
 app.set('view engine' , 'jade');
 
-app.use(bodyParser.urlencoded({extended:true, limit:"5mb"}));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit:"500mb"}));
+app.use(bodyParser.urlencoded({extended:true, limit:"500mb"}));
 app.use(cookieParser('amber'));
 //app.use(session({
   //secret: 'amber',
@@ -38,6 +38,7 @@ app.post('/user/grid_names', routes.gridnames());
 app.post('/save', routes.save());
 app.post('/update', routes.update());
 app.post('/recallGrid' , routes.recallGrid());
+app.post('/delete' , routes.delete());
 
 /*
 app.get('/admin' , routes.admin(bcrypt));
@@ -72,7 +73,6 @@ app.post('/saveimg',function(req,res){
 
 app.post('/update',routes.update());
 
-app.post('/delete' , routes.delete(fs));
 
 
 app.post('/adminUpdate' , routes.adminUpdate());
