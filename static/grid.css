@@ -2,6 +2,61 @@ body{
     font-family:helvetica
 }
 
+
+#controller{
+    height:75px;
+    position:fixed;
+    width:50%;
+    bottom:0px;
+    background:#52e5ff;
+    right:0px;
+}
+
+#buttons1 {
+    float:left;
+    height:100px;
+    width:100px;
+}
+
+#fillCan {
+    clear:both;
+    width:83px
+}
+
+#numberBox {
+float:left;
+}
+
+#probBox1 {
+    clear:both
+}
+#colorBox1{
+    clear:both
+}
+
+.prob, .color, .least{
+    width:60px;
+    float:left;
+}
+#leastLabel{
+    margin-right:85px;
+}
+#backgroundBorderBox{
+    float:left;
+    margin-left:5px
+}
+
+.background, .border, .size{
+    float:left;
+    width:88px
+}
+#backgroundBox{
+clear:both
+}
+#borderBox{
+}
+
+
 #topBox{
     float:left; 
     position:relative;
@@ -144,3 +199,4 @@ input{
 }
 
 .adminGridList img{width:25px}
+

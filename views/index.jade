@@ -20,62 +20,15 @@ html(lang="en")
           input.loggedOut(type="password", name="password", placeholder='password')
           button#login.loggedOut(value="login") Login
           button.loggedOut(id='addUser') Create User
-      div#controlbox
-        div#buttons
-          button#randomize Randomize Colors
-          button#fillCan Fill Grid
-        div#probBox(style='clear:both')
-          ul
-            li.label(style='margin-right:15px') Prob.
-            li
-              input#prob1(type='text' value='.1')
-            //li.label prob2
-            li
-              input#prob2(type='text' value='.1')
-            //li.label(style='margin-right:8px') prob3
-            li
-              input#prob3(type='text' value='.1')
-                
-        div#colorBox(style="clear:both")
-            ul
-              li.label Color
-              li
-                input#color1.colorBox(type='text' value='red')
-              //li.label color2
-              li
-                input#color2.colorBox(type='text' value='blue')
-              //li.label color3
-              li
-                input#color3.colorBox(type='text' value='blue')
+
         div.clearfix
-        div#leastBox
-          ul
-            li.label Least
-            li
-              input#least2(type='text' value='0')
-            //li.label at Least:
-            li
-              input#least3(type='text' value='0')
-        div#miscBox
-          ul
-            li.label Background
-            li    
-              input#colorBack(type='text' value='white')
-            li.label Border
-            li
-              input#colorBorder(type='text' value='black')
-        div.clearfix
-        div#sizeSave
-          ul
-            li.label Size
-            li
-              input#size(type='text' value='700')
-            if(user!=undefined)
-              li.label.loggedIn Save As:
-              li.loggedIn
-                input#savename(type='text')
-              li.loggedIn
-                button#save Save
+
+        if(user!=undefined)
+          li.label.loggedIn Save As:
+          li.loggedIn
+            input#savename(type='text')
+          li.loggedIn
+            button#save Save
         if(user!=undefined)
           button#update.loggedIn update
     div#description
@@ -97,3 +50,36 @@ html(lang="en")
     if(user == undefined)
       button#can Generate Downloadable Image
       adiv#thumb
+
+    div#controller
+      div#buttons1
+        button#fillCan fill
+        button#randomize(value='random colors') randomize
+      div#numberBox
+        div#probBox1
+          div.prob prob:
+          input.prob#prob1(type='text' value='.1')
+          input.prob#prob2(type='text' value='.1')
+          input.prob#prob3(type='text' value='.1')
+        div#colorBox1
+          div.color color:
+          input.color#color1(type='text' value='red')
+          input.color#color2(type='text' value='blue')
+          input.color#color3(type='text' value='green')
+        div#leastBox1
+          div.least#leastLabel at least:
+          input.least#least2(type='text' value=0)
+          input.least#least3(type='text' value=0)
+      div#backgroundBorderBox
+        div#backgroundBox
+          div.background background:
+          input.background#colorBack(type='text', value='white')
+        div#borderBox
+          div.border border:
+          input.border#colorBorder(type='text', value='white')
+        div#sizeBox
+          div.size size:
+          input.size#size(type='text', value=700)
+      div#saveBox
+        input#savename(type='text', placeholder='name')
+        button#save save

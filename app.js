@@ -4,11 +4,9 @@ var cookieParser = require('cookie-parser');
 var http = require('http');
 var https = require('https');
 var path = require('path');
-var fs = require('fs');
 var routes = require('./routes');
 require("./conf");
 var jade = require('jade');
-var gm = require('gm').subClass({ imageMagick: true });
 //module.exports = mongoose.connections[0];
 
 var app = express();
@@ -39,36 +37,13 @@ app.post('/save', routes.save());
 app.post('/update', routes.update());
 app.post('/recallGrid' , routes.recallGrid());
 app.post('/delete' , routes.delete());
+app.post('/saveimg', routes.saveimg());
 
 /*
 app.get('/admin' , routes.admin(bcrypt));
 
 
-app.post('/saveimg',function(req,res){
-  console.log('post to /saveimg '+ req.body.user + req.body.name);
-  var file = req.body.img.replace(/^data:image\/png;base64,/,"");
-  var name = './static/images/'+req.body.user+'_'+req.body.name;
-  console.log('name '+'.png'+ req.body.name);
-  fs.writeFile(name+'.png', file,'base64', function (err) {
-    console.log('write error: ' + err);
-    //if image is smaller than 100x100, make thumbnail same as image, otherwise crop for thumb
-    gm(name+'.png').size(function(err,val){
-      if(val.height <= 100 || val.width<=100){
-        name = name.slice(15);
-        gm(name+'.png').write(name+'_th.png',function(err){
-          name = name.slice(15);
-          res.send(name + '_th.png');
-        });
-      }else{
-        gm(name+'.png').crop(100,100,0,0).write(name+'_th.png',function(err){
-          console.log(err)
-          name = name.slice(15);
-          res.send(name+'_th.png');
-        });
-      }
-    })
-  })
-})
+
 
 
 app.post('/update',routes.update());

@@ -17,7 +17,7 @@ $(document).ready(function(){
         square.change('white');
         square.iteration = 0;
       });
-      this.changeBorder('black');
+      this.changeBorder('white');
     }
     this.changeBackground = function(newColor){
       this.squares.forEach(function(square){
@@ -80,7 +80,7 @@ $(document).ready(function(){
     }
   };
 
-  CanvasSquare = function(grid,color, width, index){
+  CanvasSquare = function(grid,     color, width, index){
     this.color = color;
     this.width = width;
     this.index = index;
@@ -367,6 +367,7 @@ $(document).ready(function(){
         cg.draw($('#cantester')[0]);
       }
     }else{
+        console.log(values);
       alert('invalid input');
       return
     }
@@ -374,6 +375,7 @@ $(document).ready(function(){
 
 
   $('#fillCan').on('click',function(){
+    console.log("click");
     buildCanvasFromFields();
   });
 
@@ -476,23 +478,27 @@ $(document).ready(function(){
 
   saveCanvasAsImage = function(canvas){
     var can = canvas.toDataURL('image/png');
-    //console.log(can);
     return can;
   }
 
-  uploadThumb = function(img, name, user,update){
+  uploadThumb = function(img, name, token, update){
     //upload image to server, server returns path of image, grid is then added to #savedList
-    var dat = {'name':name, 'img':img, 'user':user};
-    //console.log('uploading '+dat);
+    var username = $('.message').attr('name');
+    var data = {
+        'name' : name,
+        'img' : img,
+        'token' : token
+    }
+    console.log('uploading ' + data);
     $.ajax({
       type:'post',
-      data:JSON.stringify(dat),
+      data:JSON.stringify(data),
       contentType:'application/json',
       url:'/saveimg',
       success:function(data){
         //console.log(data);
         if(update == false){
-          var listItem = buildListItem(name,user);
+          var listItem = buildListItem(name, username);
           $('#savedList').append(listItem);
         }else{
           $('#savedList li[name="'+name+'"] img').replaceWith($('<img src="images'+data+'"/>').addClass('thumbnail'));
@@ -550,25 +556,25 @@ $(document).ready(function(){
       }
     })
   });
-  var idleTimer;
-  function startTimer(){
-    //console.log('click');
-    if($('#loginbox input').length == 0){
-      if(idleTimer) window.clearTimeout(idleTimer);
-      idleTimer = window.setTimeout(function(){
-        $('#logout').trigger('click');
-        alert('You have been logged out due to inactivity');
-      }, 1000*60*10);
-    }
-  }
-  $(document).on('click',function(){
-    startTimer()
-
-  });
+//  var idleTimer;
+//  function startTimer(){
+//    //console.log('click');
+//    if($('#loginbox input').length == 0){
+//      if(idleTimer) window.clearTimeout(idleTimer);
+//      idleTimer = window.setTimeout(function(){
+//        $('#logout').trigger('click');
+//        alert('You have been logged out due to inactivity');
+//      }, 1000*60*10);
+//    }
+//  }
+//  $(document).on('click',function(){
+//    startTimer()
+//
+//  });
 
   function clickLogout(){
     buildLoggedOutView();
-    window.clearTimeout(idleTimer);
+//    window.clearTimeout(idleTimer);
     var token = getToken();
     $.ajax({
       type:'post',
@@ -650,7 +656,7 @@ $(document).ready(function(){
             contentType: 'application/json',
             url: update ? '/update' : '/save',
             success: function(data) {
-//              uploadThumb(imageSRC,nameOfDesign, testArray.user,false); TODO
+              uploadThumb(imageSRC, nameOfDesign, token, false);
               $('#savename').val('');
               $('#gridName').html(nameOfDesign);
               //		    var listItem = buildListItem(nameOfDesign, testArray.user);
@@ -660,7 +666,6 @@ $(document).ready(function(){
                 alert(error.responseJSON.message);
             }
           });
-
   }
 
     $(document).on('click','#update', function(){
@@ -772,7 +777,7 @@ $(document).ready(function(){
 
 
 
-  $('.colorBox, #colorBack, #colorBorder').on('change keydown mouseup mousedown keyup click blur' ,  function(){
+  $('.color, #colorBack, #colorBorder').on('change keydown mouseup mousedown keyup click blur' ,  function(){
     updateFieldColors($(this));
   });
 
@@ -852,7 +857,7 @@ $(document).ready(function(){
       y: evt.clientY - rect.top
     };
   }
-  $('.colorBox').each(function(){
+  $('.color').each(function(){
     $(this).css('background-color' , $(this).val());
   });
 
@@ -861,17 +866,11 @@ $(document).ready(function(){
   });
 
   function randomHex(){
-    var str = '01234567890abcdef';
-    var num = "#";
-    var random = function(){return Math.floor(Math.random() * 16);}
-    while(num.length < 7){
-      num = num + str[random()];
-    }
-    return num
+     return '#'+(Math.floor(Math.random() * 16777215)).toString(16);
   }
 
   function fillWithRandomColors(){
-    $('#colorBox input').each(function(){
+    $('#color1, #color2, #color3').each(function(){
       $(this).val(randomHex());
       $(this).trigger('click');
       var size = $('#size');

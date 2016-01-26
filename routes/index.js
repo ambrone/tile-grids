@@ -2,6 +2,8 @@ var pg = require('pg');
 //var db = new pg.Client('postgres://ryan@localhost:5432/tiles');
 var connectionString = 'postgres://ryan:ryan@localhost:5432/tiles';
 var bcrypt = require('bcrypt');
+var fs = require('fs');
+var gm = require('gm').subClass({ imageMagick: true });
 
 logRequest = function(req) {
     console.log("req.headers: %j",req.headers);
@@ -77,6 +79,7 @@ exports.login = function() {
     return function(req, res) {
         logRequest(req);
         pg.connect(connectionString, function(err, client, done) {
+            console.log(err);
             if (err) {
                 done();
                 return handleError(err, res.status(500), 'db error', req);
@@ -104,6 +107,7 @@ exports.login = function() {
                 }
 
                 var password_hash = result.rows[0].password;
+                done();
 
                 bcrypt.compare(password, password_hash, function(err, result) {
                     if (err) {
@@ -180,6 +184,7 @@ exports.logout = function() {
             }
             client.query(statement, function(err, result) {
                 console.log('erasing token: ' + token);
+                done();
                 res.send();
             });
         });
@@ -220,9 +225,9 @@ exports.gridnames = function() {
                     });
 
                     console.log("found gridnames: " + gridnames);
-
+                    done();
                     res.send({
-                        username: result.rows[0].username,
+                        username: username,
                         grid_names: gridnames
                     });
                 });
@@ -347,6 +352,7 @@ saveOrUpdate = function(update) {
                 }
                 if (update) {
                     queryStringDelete = "DELETE FROM grid_data WHERE name='" + name + "' AND username='" + username + "';"
+                    console.log(queryStringDelete);
                     var deleteStatement = {
                         name : "delete-grid",
                         text : "DELETE FROM grid_data WHERE name=$1 AND username=$2",
@@ -375,9 +381,9 @@ saveOrUpdate = function(update) {
                         }
                     });
                 }
+                done();
 
             });
-
 
             res.send('saved grid');
         })
@@ -428,7 +434,7 @@ exports.recallGrid = function(userModel) {
                         });
                         row.squares = squares;
 
-//                        console.log(row);
+                        done();
                         res.send(row)
                     }
                 });
@@ -461,12 +467,45 @@ exports.delete = function() {
                     }
                     //                    var imageFile = './static/images/' + req.body.user + '_' + req.body.name + '.png';
                     //                    fs.unlink(imageFile);
+                    done();
                 });
             });
         });
     };
 }
 
+exports.saveimg = function() {
+    return function(req,res){
+      logRequest(req);
+//      console.log('post to /saveimg '+ req.body.user + req.body.name);
+      authenticateToken(req.body.token, res, function(username){
+          var file = req.body.img.replace(/^data:image\/png;base64,/,"");
+          var name = './static/images/' + username + '_'+req.body.name;
+          console.log(name + '.png');
+          fs.writeFile(name + '.png', file, 'base64', function (err) {
+            if (err){
+                return handleError(err);
+            }
+            //if image is smaller than 100x100, make thumbnail same as image, otherwise crop for thumb
+            gm(name+'.png').size(function(err,val){
+              if(val.height <= 100 || val.width<=100){
+                name = name.slice(15);
+                gm(name+'.png').write(name+'_th.png',function(err){
+                  name = name.slice(15);
+                  res.send(name + '_th.png');
+                });
+              }else{
+                gm(name+'.png').crop(100,100,0,0).write(name+'_th.png',function(err){
+                  console.log(err)
+                  name = name.slice(15);
+                  res.send(name+'_th.png');
+                });
+              }
+            })
+          })
+      })
+    }
+}
 
 /*
 var s = 'ryan';
