@@ -1,5 +1,4 @@
 var pg = require('pg');
-//var db = new pg.Client('postgres://ryan@localhost:5432/tiles');
 var connectionString = 'postgres://ryan:ryan@localhost:5432/tiles';
 var bcrypt = require('bcrypt');
 var fs = require('fs');
@@ -8,11 +7,7 @@ var gm = require('gm').subClass({ imageMagick: true });
 logRequest = function(req) {
     console.log("req.headers: %j",req.headers);
     console.log("\nreq.url: %j", req.originalUrl);
-//    console.log("req.body: %j", req.body);
     console.log("req.params: %j", req.params);
-    //for (key in req){
-    //console.log(key);
-    //};
 }
 handleError = function(error, res, message, req) {
     console.log("error: " + error);
@@ -62,9 +57,11 @@ authenticateToken = function(token, res, callback) {
 }
 
 checkPasswordForGoodness = function(pw) {
+    //TODO
     return true;
 }
 checkUsernameForGoodness = function(username) {
+    //TODO
     return true;
 }
 
@@ -359,13 +356,11 @@ saveOrUpdate = function(update) {
                         values : [name, username]
                     }
                     client.query(deleteStatement, function(err, result) {
-                        console.log(queryStringDelete);
                         if (err) {
                             done();
                             return handleError(err, res.status(500), 'db error', req);
                         }
                         client.query(insertStatement, function(err, result) {
-                            console.log(queryString);
                             if (err) {
                                 done();
                                 return handleError(err, res.status(500), 'db error', req);
@@ -458,7 +453,7 @@ exports.delete = function() {
 
                 client.query({
                     text: "DELETE FROM grid_data WHERE username=$1 AND name=$2",
-                    name: "insert-my-data",
+                    name: "delete-grid",
                     values: [username, grid_name]
                 }, function(err, result) {
                     if (err) {

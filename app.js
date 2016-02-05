@@ -7,7 +7,6 @@ var path = require('path');
 var routes = require('./routes');
 require("./conf");
 var jade = require('jade');
-//module.exports = mongoose.connections[0];
 
 var app = express();
 
@@ -18,12 +17,6 @@ app.set('view engine' , 'jade');
 app.use(bodyParser.json({limit:"500mb"}));
 app.use(bodyParser.urlencoded({extended:true, limit:"500mb"}));
 app.use(cookieParser('amber'));
-//app.use(session({
-  //secret: 'amber',
-  //store: new MongoStore({ mongooseConnection: mongoose.connection }),
-  //resave:true,
-  //saveUninitialized: true
-//}));
 app.use(express.static('./static'));
 
 
@@ -41,17 +34,10 @@ app.post('/saveimg', routes.saveimg());
 
 /*
 app.get('/admin' , routes.admin(bcrypt));
-
-
-
-
-
 app.post('/update',routes.update());
-
-
-
 app.post('/adminUpdate' , routes.adminUpdate());
 */
+
 if (environment != 'development') {
   var options = {
     key:fs.readFileSync('./tiles.key'),
